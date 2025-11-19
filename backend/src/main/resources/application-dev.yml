@@ -1,0 +1,18 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.liyaqa.gym: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: TRACE

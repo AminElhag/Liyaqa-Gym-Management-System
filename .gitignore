@@ -1,0 +1,262 @@
+# ===========================
+# Gradle
+# ===========================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+gradle-app.setting
+.gradletasknamecache
+
+# ===========================
+# IntelliJ IDEA
+# ===========================
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# ===========================
+# Eclipse
+# ===========================
+.classpath
+.project
+.settings/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.recommenders
+
+# ===========================
+# VS Code
+# ===========================
+.vscode/
+*.code-workspace
+
+# ===========================
+# macOS
+# ===========================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ===========================
+# Windows
+# ===========================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# ===========================
+# Linux
+# ===========================
+*~
+
+# ===========================
+# Kotlin/Java
+# ===========================
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# ===========================
+# Spring Boot
+# ===========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ===========================
+# Android
+# ===========================
+*.apk
+*.ap_
+*.aab
+*.dex
+.externalNativeBuild/
+.cxx/
+local.properties
+captures/
+.navigation/
+*.jks
+output.json
+google-services.json
+*.hprof
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+
+# Android Studio
+android/.idea/
+android/app/release/
+android/app/debug/
+android/app/build/
+android/build/
+android/captures/
+android/local.properties
+mobile/androidApp/.cxx/
+mobile/androidApp/build/
+mobile/androidApp/captures/
+
+# ===========================
+# iOS / Xcode
+# ===========================
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.xcuserstate
+*.xcscmblueprint
+*.xcworkspace
+!default.xcworkspace
+Pods/
+Carthage/Build/
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+iOSInjectionProject/
+
+# CocoaPods
+mobile/iosApp/Pods/
+mobile/iosApp/*.xcworkspace
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+Package.pins
+Package.resolved
+
+# ===========================
+# React / Node.js / Web
+# ===========================
+web/node_modules/
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/lerna-debug.log*
+web/.pnpm-debug.log*
+web/dist/
+web/dist-ssr/
+web/build/
+web/.env
+web/.env.local
+web/.env.development.local
+web/.env.test.local
+web/.env.production.local
+web/.next/
+web/out/
+web/.cache/
+web/.parcel-cache/
+web/.vuepress/dist
+web/.serverless/
+web/.fusebox/
+web/.dynamodb/
+web/.tern-port
+web/.vscode-test
+web/.yarn/cache
+web/.yarn/unplugged
+web/.yarn/build-state.yml
+web/.yarn/install-state.gz
+web/.pnp.*
+
+# Testing
+web/coverage/
+web/.nyc_output/
+
+# ===========================
+# Kotlin Multiplatform
+# ===========================
+mobile/shared/build/
+mobile/.kotlin/
+*.klib
+
+# ===========================
+# Environment & Secrets
+# ===========================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.keystore
+credentials.json
+secrets.yml
+application-local.yml
+
+# ===========================
+# Database
+# ===========================
+*.db
+*.sqlite
+*.sqlite3
+
+# ===========================
+# Logs
+# ===========================
+logs/
+*.log
+log/
+
+# ===========================
+# Docker
+# ===========================
+docker/data/
+*.pid
+
+# ===========================
+# Backup files
+# ===========================
+*.orig
+*.backup
