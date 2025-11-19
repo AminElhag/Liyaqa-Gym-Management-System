@@ -62,4 +62,21 @@ interface AccessLogRepository {
      * @return Result containing the saved access log
      */
     fun save(accessLog: AccessLog): Result<AccessLog>
+
+    /**
+     * Find active (not checked out) access log for a member at a branch.
+     *
+     * @param memberId The member identifier
+     * @param branchId The branch identifier
+     * @return Optional containing the active access log if found, empty otherwise
+     */
+    fun findActiveByMemberAndBranch(memberId: UUID, branchId: UUID): Result<Optional<AccessLog>>
+
+    /**
+     * Count currently checked in members at a branch.
+     *
+     * @param branchId The branch identifier
+     * @return Result containing the count of checked-in members
+     */
+    fun countCheckedInByBranch(branchId: UUID): Result<Int>
 }
