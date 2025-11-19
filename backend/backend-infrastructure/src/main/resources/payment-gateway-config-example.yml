@@ -1,0 +1,73 @@
+# Payment Gateway Configuration Example
+# Copy this to your application.yml or application.properties and fill in your credentials
+
+payment:
+  # Enable test mode for development (uses sandbox/test endpoints)
+  testMode: true
+
+  # Stripe Payment Gateway Configuration
+  # Supports: Credit cards, Debit cards, Apple Pay, Google Pay
+  stripe:
+    enabled: true
+    apiKey: ${STRIPE_API_KEY:sk_test_your_test_key_here}
+    webhookSecret: ${STRIPE_WEBHOOK_SECRET:whsec_your_webhook_secret_here}
+    apiVersion: "2023-10-16"
+    connectTimeout: 30000  # 30 seconds
+    readTimeout: 80000     # 80 seconds
+
+  # Mada Payment Gateway Configuration (via HyperPay/OPPWA)
+  # Mada is the Saudi national debit card scheme
+  mada:
+    enabled: true
+    merchantId: ${MADA_MERCHANT_ID:your_merchant_id}
+    apiKey: ${MADA_API_KEY:your_api_key}
+    webhookSecret: ${MADA_WEBHOOK_SECRET:your_webhook_secret}
+    # Entity ID for Mada transactions (provided by HyperPay)
+    entityId: ${MADA_ENTITY_ID:your_entity_id}
+    gatewayUrl: "https://api.hyperpay.com/v1"
+    testGatewayUrl: "https://test.oppwa.com/v1"
+    connectTimeout: 30000
+    readTimeout: 80000
+
+  # STC Pay Payment Gateway Configuration
+  # STC Pay is a popular Saudi digital wallet service
+  stcPay:
+    enabled: true
+    merchantId: ${STCPAY_MERCHANT_ID:your_merchant_id}
+    apiKey: ${STCPAY_API_KEY:your_api_key}
+    apiSecret: ${STCPAY_API_SECRET:your_api_secret}
+    webhookSecret: ${STCPAY_WEBHOOK_SECRET:your_webhook_secret}
+    gatewayUrl: "https://api.stcpay.com.sa/v1"
+    testGatewayUrl: "https://sandbox.stcpay.com.sa/v1"
+    connectTimeout: 30000
+    readTimeout: 80000
+
+# Example for production configuration:
+# payment:
+#   testMode: false
+#   stripe:
+#     enabled: true
+#     apiKey: ${STRIPE_API_KEY}
+#     webhookSecret: ${STRIPE_WEBHOOK_SECRET}
+#   mada:
+#     enabled: true
+#     merchantId: ${MADA_MERCHANT_ID}
+#     apiKey: ${MADA_API_KEY}
+#     entityId: ${MADA_ENTITY_ID}
+#   stcPay:
+#     enabled: true
+#     merchantId: ${STCPAY_MERCHANT_ID}
+#     apiKey: ${STCPAY_API_KEY}
+#     apiSecret: ${STCPAY_API_SECRET}
+
+# Environment Variables (recommended for production):
+# STRIPE_API_KEY=sk_live_...
+# STRIPE_WEBHOOK_SECRET=whsec_...
+# MADA_MERCHANT_ID=...
+# MADA_API_KEY=...
+# MADA_ENTITY_ID=...
+# MADA_WEBHOOK_SECRET=...
+# STCPAY_MERCHANT_ID=...
+# STCPAY_API_KEY=...
+# STCPAY_API_SECRET=...
+# STCPAY_WEBHOOK_SECRET=...
