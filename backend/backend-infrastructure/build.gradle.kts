@@ -21,6 +21,9 @@ dependencies {
 
     // Database
     implementation("org.postgresql:postgresql:${rootProject.extra["postgresqlVersion"]}")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("com.zaxxer:HikariCP")
 
     // Jackson for serialization
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
