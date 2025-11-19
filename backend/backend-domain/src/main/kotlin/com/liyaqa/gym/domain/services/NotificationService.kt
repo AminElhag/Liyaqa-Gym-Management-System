@@ -63,4 +63,48 @@ interface NotificationService {
         scheduleId: UUID,
         bookingId: UUID
     ): Result<Unit>
+
+    /**
+     * Send a check-in confirmation notification.
+     *
+     * @param memberId The ID of the member
+     * @param branchId The ID of the branch
+     * @param accessLogId The ID of the access log
+     * @return Result indicating success or failure
+     */
+    fun sendCheckInConfirmation(
+        memberId: UUID,
+        branchId: UUID,
+        accessLogId: UUID
+    ): Result<Unit>
+
+    /**
+     * Send an access denied notification.
+     *
+     * @param memberId The ID of the member
+     * @param branchId The ID of the branch
+     * @param reason The reason for denial
+     * @return Result indicating success or failure
+     */
+    fun sendAccessDeniedNotification(
+        memberId: UUID,
+        branchId: UUID,
+        reason: String
+    ): Result<Unit>
+
+    /**
+     * Send a guest access code notification.
+     *
+     * @param hostMemberId The ID of the host member
+     * @param guestAccessId The ID of the guest access
+     * @param guestName The name of the guest
+     * @param qrCode The QR code for guest access
+     * @return Result indicating success or failure
+     */
+    fun sendGuestAccessCode(
+        hostMemberId: UUID,
+        guestAccessId: UUID,
+        guestName: String,
+        qrCode: String
+    ): Result<Unit>
 }
