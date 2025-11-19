@@ -1,0 +1,29 @@
+# Security Configuration Example
+# Copy this file to application.properties or application.yml and configure the values
+
+# JWT Configuration
+# IMPORTANT: Change this secret in production! Use a strong, random secret (at least 256 bits)
+app.jwt.secret=YourVerySecretJWTKeyThatShouldBeAtLeast256BitsLongForHS512Algorithm
+app.jwt.access-token-expiration-ms=86400000
+# 24 hours (in milliseconds)
+app.jwt.refresh-token-expiration-ms=2592000000
+# 30 days (in milliseconds)
+
+# CORS Configuration
+# Comma-separated list of allowed origins
+app.cors.allowed-origins=http://localhost:3000,http://localhost:8080,https://yourdomain.com
+app.cors.allowed-methods=GET,POST,PUT,DELETE,PATCH,OPTIONS
+app.cors.allowed-headers=*
+app.cors.allow-credentials=true
+
+# Rate Limiting (configured in code, but can be externalized)
+# app.rate-limit.max-requests-per-minute=5
+# app.rate-limit.window-size-seconds=60
+
+# Security Notes:
+# 1. Always use HTTPS in production
+# 2. Keep JWT secret secure and rotate regularly
+# 3. Use environment variables for secrets in production
+# 4. Configure CORS origins specifically for your domains
+# 5. Consider using Redis for rate limiting in distributed systems
+# 6. Enable method security with @PreAuthorize annotations
