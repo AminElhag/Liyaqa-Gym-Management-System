@@ -20,6 +20,8 @@ dependencies {
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:${rootProject.extra["jjwtVersion"]}")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:${rootProject.extra["jjwtVersion"]}")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:${rootProject.extra["jjwtVersion"]}")
 
     // Documentation
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${rootProject.extra["springdocVersion"]}")
