@@ -55,6 +55,14 @@ interface PaymentRepository {
     fun findPending(page: Int = 0, size: Int = 20): Result<List<Payment>>
 
     /**
+     * Find a payment by payment gateway ID.
+     *
+     * @param paymentGatewayId The payment gateway transaction ID
+     * @return The payment if found, null otherwise
+     */
+    fun findByPaymentGatewayId(paymentGatewayId: String): Payment?
+
+    /**
      * Save a payment (create or update).
      *
      * @param payment The payment to save
