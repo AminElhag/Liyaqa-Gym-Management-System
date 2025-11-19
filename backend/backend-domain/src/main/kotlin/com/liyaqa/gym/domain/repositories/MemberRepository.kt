@@ -1,6 +1,10 @@
 package com.liyaqa.gym.domain.repositories
 
+import com.liyaqa.gym.domain.entities.Gender
 import com.liyaqa.gym.domain.entities.Member
+import com.liyaqa.gym.domain.entities.MemberStatus
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import java.util.Optional
 import java.util.UUID
 
@@ -37,6 +41,39 @@ interface MemberRepository {
     fun findByBranch(branchId: UUID, page: Int = 0, size: Int = 20): Result<List<Member>>
 
     /**
+     * Search members with dynamic criteria.
+     *
+     * @param branchId Filter by branch ID (optional)
+     * @param name Search by name (partial match, case-insensitive)
+     * @param email Search by email (partial match, case-insensitive)
+     * @param phone Search by phone (partial match)
+     * @param nationalId Search by national ID (exact match)
+     * @param status Filter by status (optional)
+     * @param gender Filter by gender (optional)
+     * @param pageable Pagination and sorting parameters
+     * @return Result containing a page of members
+     */
+    fun search(
+        branchId: UUID?,
+        name: String?,
+        email: String?,
+        phone: String?,
+        nationalId: String?,
+        status: MemberStatus?,
+        gender: Gender?,
+        pageable: Pageable
+    ): Result<Page<Member>>
+
+    /**
+     * Count total members by criteria.
+     *
+     * @param branchId Filter by branch ID (optional)
+     * @param status Filter by status (optional)
+     * @return Result containing count of members
+     */
+    fun countByBranchAndStatus(branchId: UUID?, status: MemberStatus?): Result<Long>
+
+    /**
      * Save a member (create or update).
      *
      * @param member The member to save
@@ -51,4 +88,22 @@ interface MemberRepository {
      * @return Result containing true if exists, false otherwise
      */
     fun existsByEmail(email: String): Result<Boolean>
+
+    /**
+     * Check if a member with the given email exists (excluding a specific member ID).
+     * Useful for update operations to check uniqueness.
+     *
+     * @param email The email address to check
+     * @param excludeMemberId The member ID to exclude from the check
+     * @return Result containing true if exists, false otherwise
+     */
+    fun existsByEmailExcludingMember(email: String, excludeMemberId: UUID): Result<Boolean>
+
+    /**
+     * Soft delete a member by marking them as deleted.
+     *
+     * @param memberId The member ID to delete
+     * @return Result indicating success
+     */
+    fun softDelete(memberId: UUID): Result<Unit>
 }
