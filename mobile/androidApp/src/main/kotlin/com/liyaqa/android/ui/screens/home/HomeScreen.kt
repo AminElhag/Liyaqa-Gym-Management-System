@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.liyaqa.android.ui.screens.classes.ClassListScreen
 
 /**
  * Home screen with bottom navigation and dashboard content
@@ -79,7 +80,7 @@ fun HomeScreen(
                     onCheckIn = { viewModel.checkIn() },
                     navController = navController
                 )
-                1 -> ClassesTab()
+                1 -> ClassesTab(navController = navController)
                 2 -> BookingsTab()
                 3 -> ProfileTab()
             }
@@ -203,36 +204,13 @@ private fun DashboardTab(
 }
 
 /**
- * Classes tab (placeholder)
+ * Classes tab with class list
  */
 @Composable
-private fun ClassesTab() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = Icons.Default.FitnessCenter,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(64.dp)
-                    .padding(bottom = 16.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = "Classes",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Text(
-                text = "Coming soon",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
+private fun ClassesTab(navController: NavHostController) {
+    // Embed the ClassListScreen directly in the tab
+    // Remove the Scaffold from ClassListScreen to avoid nested app bars
+    ClassListScreen(navController = navController)
 }
 
 /**

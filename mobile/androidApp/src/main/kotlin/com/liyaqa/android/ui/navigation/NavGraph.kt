@@ -3,11 +3,15 @@ package com.liyaqa.android.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.liyaqa.android.ui.screens.auth.LoginScreen
 import com.liyaqa.android.ui.screens.auth.RegisterScreen
+import com.liyaqa.android.ui.screens.classes.ClassDetailScreen
+import com.liyaqa.android.ui.screens.classes.ClassListScreen
 import com.liyaqa.android.ui.screens.home.HomeScreen
 import com.liyaqa.android.ui.screens.splash.SplashScreen
 
@@ -56,8 +60,24 @@ fun LiyaqaNavGraph(
             HomeScreen(navController = navController)
         }
 
+        // Class List Screen
+        composable(route = Screen.ClassList.route) {
+            ClassListScreen(navController = navController)
+        }
+
+        // Class Detail Screen
+        composable(
+            route = Screen.ClassDetails.route,
+            arguments = listOf(
+                navArgument("scheduleId") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            ClassDetailScreen(navController = navController)
+        }
+
         // TODO: Add more screens as they are implemented
-        // - Class list and details
         // - Booking screens
         // - Profile screen
         // - Settings screen
@@ -77,9 +97,9 @@ private fun handleDeepLink(navController: NavHostController, deepLink: String) {
             // navController.navigate(Screen.BookingDetails.createRoute(bookingId))
         }
         deepLink.startsWith("liyaqa://class/") -> {
-            val classId = deepLink.substringAfter("liyaqa://class/")
+            val scheduleId = deepLink.substringAfter("liyaqa://class/")
             // Navigate to class details
-            // navController.navigate(Screen.ClassDetails.createRoute(classId))
+            navController.navigate(Screen.ClassDetails.createRoute(scheduleId))
         }
         deepLink.startsWith("liyaqa://promotion/") -> {
             val promotionId = deepLink.substringAfter("liyaqa://promotion/")
@@ -98,8 +118,8 @@ sealed class Screen(val route: String) {
     data object Login : Screen("login")
     data object Register : Screen("register")
     data object ClassList : Screen("classes")
-    data object ClassDetails : Screen("class/{classId}") {
-        fun createRoute(classId: String) = "class/$classId"
+    data object ClassDetails : Screen("class/{scheduleId}") {
+        fun createRoute(scheduleId: String) = "class/$scheduleId"
     }
     data object Booking : Screen("booking")
     data object BookingDetails : Screen("booking/{bookingId}") {
