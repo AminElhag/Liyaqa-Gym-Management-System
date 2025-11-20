@@ -14,6 +14,9 @@ import com.liyaqa.android.ui.screens.checkin.CheckInScreen
 import com.liyaqa.android.ui.screens.classes.ClassDetailScreen
 import com.liyaqa.android.ui.screens.classes.ClassListScreen
 import com.liyaqa.android.ui.screens.home.HomeScreen
+import com.liyaqa.android.ui.screens.profile.EditProfileScreen
+import com.liyaqa.android.ui.screens.profile.NotificationSettingsScreen
+import com.liyaqa.android.ui.screens.profile.ProfileScreen
 import com.liyaqa.android.ui.screens.splash.SplashScreen
 
 /**
@@ -83,12 +86,27 @@ fun LiyaqaNavGraph(
             CheckInScreen(navController = navController)
         }
 
+        // Profile Screen
+        composable(route = Screen.Profile.route) {
+            ProfileScreen(navController = navController)
+        }
+
+        // Edit Profile Screen
+        composable(route = "edit-profile") {
+            EditProfileScreen(navController = navController)
+        }
+
+        // Notification Settings Screen
+        composable(route = "notification-settings") {
+            NotificationSettingsScreen(navController = navController)
+        }
+
         // TODO: Add more screens as they are implemented
-        // - Booking screens
-        // - Profile screen
-        // - Settings screen
+        // - Subscription details screen
+        // - Payment methods screen
+        // - Invoices screen
+        // - Change password screen
         // - QR scanner screen
-        // - Payment screens
     }
 }
 

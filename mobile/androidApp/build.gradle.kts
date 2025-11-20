@@ -93,6 +93,7 @@ dependencies {
     // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.34.0")
 
     // CameraX for QR code scanning
     implementation("androidx.camera:camera-camera2:1.4.1")
