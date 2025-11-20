@@ -84,6 +84,27 @@ class KoinHelper {
         }
         return koin.get(objCClass: GetSchedulesUseCase.self) as! GetSchedulesUseCase
     }
+
+    func getCheckInUseCase() -> CheckInUseCase {
+        guard let koin = koin else {
+            fatalError("Koin not initialized. Call initKoin() first.")
+        }
+        return koin.get(objCClass: CheckInUseCase.self) as! CheckInUseCase
+    }
+
+    func getBookClassUseCase() -> BookClassUseCase {
+        guard let koin = koin else {
+            fatalError("Koin not initialized. Call initKoin() first.")
+        }
+        return koin.get(objCClass: BookClassUseCase.self) as! BookClassUseCase
+    }
+
+    func getCancelBookingUseCase() -> CancelBookingUseCase {
+        guard let koin = koin else {
+            fatalError("Koin not initialized. Call initKoin() first.")
+        }
+        return koin.get(objCClass: CancelBookingUseCase.self) as! CancelBookingUseCase
+    }
 }
 
 // MARK: - Koin Helper Extension
