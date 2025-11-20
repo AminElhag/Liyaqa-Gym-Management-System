@@ -1,0 +1,102 @@
+-- Booking table for offline caching
+CREATE TABLE BookingEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    memberId TEXT NOT NULL,
+    scheduleId TEXT NOT NULL,
+    status TEXT NOT NULL,
+    bookedAt TEXT NOT NULL,
+    waitlistPosition INTEGER,
+    confirmedAt TEXT,
+    checkedInAt TEXT,
+    cancelledAt TEXT,
+    cancellationReason TEXT,
+    noShowMarkedAt TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    cachedAt TEXT NOT NULL,
+    FOREIGN KEY (memberId) REFERENCES MemberEntity(id) ON DELETE CASCADE,
+    FOREIGN KEY (scheduleId) REFERENCES ClassScheduleEntity(id) ON DELETE CASCADE
+);
+
+-- Indexes
+CREATE INDEX booking_member_idx ON BookingEntity(memberId);
+CREATE INDEX booking_schedule_idx ON BookingEntity(scheduleId);
+CREATE INDEX booking_status_idx ON BookingEntity(status);
+
+-- Queries
+selectAll:
+SELECT * FROM BookingEntity ORDER BY bookedAt DESC;
+
+selectById:
+SELECT * FROM BookingEntity WHERE id = ?;
+
+selectByMemberId:
+SELECT * FROM BookingEntity WHERE memberId = ? ORDER BY bookedAt DESC;
+
+selectByScheduleId:
+SELECT * FROM BookingEntity WHERE scheduleId = ? ORDER BY bookedAt ASC;
+
+selectByMemberAndSchedule:
+SELECT * FROM BookingEntity WHERE memberId = ? AND scheduleId = ?;
+
+selectUpcomingByMember:
+SELECT b.*, s.startDateTime
+FROM BookingEntity b
+INNER JOIN ClassScheduleEntity s ON b.scheduleId = s.id
+WHERE b.memberId = ?
+  AND s.startDateTime >= datetime('now')
+  AND b.status IN ('CONFIRMED', 'WAITLISTED')
+ORDER BY s.startDateTime ASC;
+
+selectByStatus:
+SELECT * FROM BookingEntity WHERE status = ? ORDER BY bookedAt DESC;
+
+selectWaitlistedBySchedule:
+SELECT * FROM BookingEntity
+WHERE scheduleId = ? AND status = 'WAITLISTED'
+ORDER BY waitlistPosition ASC;
+
+insert:
+INSERT OR REPLACE INTO BookingEntity (
+    id, memberId, scheduleId, status, bookedAt, waitlistPosition,
+    confirmedAt, checkedInAt, cancelledAt, cancellationReason,
+    noShowMarkedAt, createdAt, updatedAt, cachedAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateStatus:
+UPDATE BookingEntity
+SET status = ?, updatedAt = ?
+WHERE id = ?;
+
+cancel:
+UPDATE BookingEntity
+SET status = 'CANCELLED', cancelledAt = ?, cancellationReason = ?, updatedAt = ?
+WHERE id = ?;
+
+checkIn:
+UPDATE BookingEntity
+SET status = 'ATTENDED', checkedInAt = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM BookingEntity WHERE id = ?;
+
+deleteByMemberId:
+DELETE FROM BookingEntity WHERE memberId = ?;
+
+deleteByScheduleId:
+DELETE FROM BookingEntity WHERE scheduleId = ?;
+
+deleteOldBookings:
+DELETE FROM BookingEntity
+WHERE id IN (
+    SELECT b.id FROM BookingEntity b
+    INNER JOIN ClassScheduleEntity s ON b.scheduleId = s.id
+    WHERE s.endDateTime < ?
+);
+
+deleteAll:
+DELETE FROM BookingEntity;
+
+count:
+SELECT COUNT(*) FROM BookingEntity;

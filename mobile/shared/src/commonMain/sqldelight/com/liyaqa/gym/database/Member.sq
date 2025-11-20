@@ -1,0 +1,61 @@
+-- Member table for offline caching
+CREATE TABLE MemberEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    branchId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    nameArabic TEXT,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    nationalId TEXT,
+    gender TEXT NOT NULL,
+    dateOfBirth TEXT,
+    status TEXT NOT NULL,
+    profilePhotoUrl TEXT,
+    emergencyContactName TEXT,
+    emergencyContactPhone TEXT,
+    notes TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    cachedAt TEXT NOT NULL
+);
+
+-- Indexes
+CREATE INDEX member_branch_idx ON MemberEntity(branchId);
+CREATE INDEX member_status_idx ON MemberEntity(status);
+
+-- Queries
+selectAll:
+SELECT * FROM MemberEntity ORDER BY name ASC;
+
+selectById:
+SELECT * FROM MemberEntity WHERE id = ?;
+
+selectByBranchId:
+SELECT * FROM MemberEntity WHERE branchId = ? ORDER BY name ASC;
+
+selectByStatus:
+SELECT * FROM MemberEntity WHERE status = ? ORDER BY name ASC;
+
+search:
+SELECT * FROM MemberEntity
+WHERE name LIKE '%' || ? || '%'
+   OR nameArabic LIKE '%' || ? || '%'
+   OR email LIKE '%' || ? || '%'
+   OR phone LIKE '%' || ? || '%'
+ORDER BY name ASC;
+
+insert:
+INSERT OR REPLACE INTO MemberEntity (
+    id, branchId, name, nameArabic, email, phone, nationalId, gender,
+    dateOfBirth, status, profilePhotoUrl, emergencyContactName,
+    emergencyContactPhone, notes, createdAt, updatedAt, cachedAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM MemberEntity WHERE id = ?;
+
+deleteAll:
+DELETE FROM MemberEntity;
+
+count:
+SELECT COUNT(*) FROM MemberEntity;
