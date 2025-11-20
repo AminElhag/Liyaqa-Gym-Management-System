@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.liyaqa.android.ui.screens.auth.LoginScreen
+import com.liyaqa.android.ui.screens.auth.RegisterScreen
 import com.liyaqa.android.ui.screens.home.HomeScreen
 import com.liyaqa.android.ui.screens.splash.SplashScreen
 
@@ -39,13 +41,22 @@ fun LiyaqaNavGraph(
             )
         }
 
+        // Login Screen
+        composable(route = Screen.Login.route) {
+            LoginScreen(navController = navController)
+        }
+
+        // Register Screen
+        composable(route = Screen.Register.route) {
+            RegisterScreen(navController = navController)
+        }
+
         // Home Screen (Main screen with bottom navigation)
         composable(route = Screen.Home.route) {
             HomeScreen(navController = navController)
         }
 
         // TODO: Add more screens as they are implemented
-        // - Login/Auth screens
         // - Class list and details
         // - Booking screens
         // - Profile screen

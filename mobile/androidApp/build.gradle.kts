@@ -82,6 +82,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // Hilt Dependency Injection
     implementation("com.google.dagger:hilt-android:2.51.1")

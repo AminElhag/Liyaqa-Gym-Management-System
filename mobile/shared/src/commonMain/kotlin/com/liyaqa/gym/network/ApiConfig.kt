@@ -10,6 +10,7 @@ object ApiConfig {
     object Endpoints {
         // Auth endpoints
         const val LOGIN = "/auth/login"
+        const val REGISTER = "/auth/register"
         const val LOGOUT = "/auth/logout"
         const val REFRESH_TOKEN = "/auth/refresh"
 
