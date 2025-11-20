@@ -1,11 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAppSelector } from '@app/store/hooks';
 
 // Layout
 import MainLayout from '@components/layout/MainLayout';
 
+// Auth Components
+import { LoginPage, RegisterPage } from '@pages/auth';
+import { ProtectedRoute } from '@components/auth';
+
 // Pages
-import LoginPage from '@pages/LoginPage';
 import DashboardPage from '@pages/DashboardPage';
 import MembersPage from '@pages/MembersPage';
 import SubscriptionsPage from '@pages/SubscriptionsPage';
@@ -13,26 +15,14 @@ import ClassesPage from '@pages/ClassesPage';
 import AnalyticsPage from '@pages/AnalyticsPage';
 import NotFoundPage from '@pages/NotFoundPage';
 
-// Protected Route Component
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
-function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-}
-
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
+      {/* Protected routes */}
       <Route
         path="/"
         element={
@@ -49,6 +39,7 @@ export function AppRoutes() {
         <Route path="analytics" element={<AnalyticsPage />} />
       </Route>
 
+      {/* 404 */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
