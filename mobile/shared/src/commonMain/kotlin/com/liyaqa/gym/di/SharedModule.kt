@@ -5,6 +5,7 @@ import com.liyaqa.gym.database.DatabaseDriverFactory
 import com.liyaqa.gym.database.LiyaqaDatabase
 import com.liyaqa.gym.database.LiyaqaDatabaseWrapper
 import com.liyaqa.gym.database.dao.*
+import com.liyaqa.gym.domain.di.domainModule
 import com.liyaqa.gym.network.ApiClient
 import com.liyaqa.gym.network.ConnectivityMonitor
 import com.liyaqa.gym.network.DefaultConnectivityMonitor
@@ -19,6 +20,8 @@ import org.koin.dsl.module
  * Shared Koin DI module for the mobile application
  */
 fun sharedModule(enableLogging: Boolean = true) = module {
+    // Include domain module
+    includes(domainModule)
     // Database
     single {
         val driverFactory: DatabaseDriverFactory = get()
