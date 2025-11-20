@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct RegisterView: View {
-    @StateObject private var viewModel = AuthViewModel()
+    @StateObject private var viewModel = RegisterViewModel()
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) var dismiss
     @FocusState private var focusedField: Field?
 
     enum Field {
-        case fullName, email, phoneNumber, password
+        case fullName, email, phoneNumber, nationalId, password
     }
 
     var body: some View {
@@ -38,6 +38,9 @@ struct RegisterView: View {
                             .onSubmit {
                                 focusedField = .email
                             }
+                            .accessibilityLabel("Full Name")
+                            .accessibilityHint("Enter your full name")
+                            .accessibilityIdentifier("registerFullNameField")
 
                         // Email
                         TextField("Email", text: $viewModel.email)
@@ -50,17 +53,39 @@ struct RegisterView: View {
                             .onSubmit {
                                 focusedField = .phoneNumber
                             }
+                            .accessibilityLabel("Email")
+                            .accessibilityHint("Enter your email address")
+                            .accessibilityIdentifier("registerEmailField")
 
                         // Phone Number
-                        TextField("Phone Number (Optional)", text: $viewModel.phoneNumber)
+                        TextField("Phone Number", text: $viewModel.phoneNumber)
                             .textFieldStyle(icon: "phone.fill")
                             .keyboardType(.phonePad)
                             .textContentType(.telephoneNumber)
                             .focused($focusedField, equals: .phoneNumber)
                             .submitLabel(.next)
                             .onSubmit {
+                                focusedField = .nationalId
+                            }
+                            .onChange(of: viewModel.phoneNumber) { _ in
+                                viewModel.formatPhoneNumber()
+                            }
+                            .accessibilityLabel("Phone Number")
+                            .accessibilityHint("Enter your Saudi phone number (e.g., 05xxxxxxxx)")
+                            .accessibilityIdentifier("registerPhoneField")
+
+                        // National ID
+                        TextField("National ID", text: $viewModel.nationalId)
+                            .textFieldStyle(icon: "creditcard.fill")
+                            .keyboardType(.numberPad)
+                            .focused($focusedField, equals: .nationalId)
+                            .submitLabel(.next)
+                            .onSubmit {
                                 focusedField = .password
                             }
+                            .accessibilityLabel("National ID")
+                            .accessibilityHint("Enter your Saudi National ID (10 digits)")
+                            .accessibilityIdentifier("registerNationalIdField")
 
                         // Password
                         SecureField("Password", text: $viewModel.password)
@@ -73,25 +98,40 @@ struct RegisterView: View {
                                     await viewModel.register()
                                 }
                             }
+                            .onChange(of: viewModel.password) { _ in
+                                viewModel.validatePassword()
+                            }
+                            .accessibilityLabel("Password")
+                            .accessibilityHint("Enter a password (at least 8 characters)")
+                            .accessibilityIdentifier("registerPasswordField")
 
                         // Password Requirements
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Password must:")
-                                .font(.labelSmall)
-                                .foregroundColor(.textSecondary)
-
-                            HStack {
-                                Image(systemName: viewModel.password.count >= 8 ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(viewModel.password.count >= 8 ? .success : .textSecondary)
-                                    .font(.caption)
-
-                                Text("Be at least 8 characters long")
+                            if viewModel.password.isEmpty {
+                                Text("Password must:")
                                     .font(.labelSmall)
                                     .foregroundColor(.textSecondary)
+
+                                HStack {
+                                    Image(systemName: "circle")
+                                        .foregroundColor(.textSecondary)
+                                        .font(.caption)
+
+                                    Text("Be at least 8 characters long")
+                                        .font(.labelSmall)
+                                        .foregroundColor(.textSecondary)
+                                }
+                            } else {
+                                Text(viewModel.passwordValidationMessage)
+                                    .font(.labelSmall)
+                                    .foregroundColor(viewModel.isPasswordValid ? .success : .warning)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 4)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Password requirements")
+                        .accessibilityValue(viewModel.passwordValidationMessage.isEmpty ? "At least 8 characters" : viewModel.passwordValidationMessage)
                     }
                     .padding(.horizontal)
 
@@ -101,6 +141,9 @@ struct RegisterView: View {
                             .font(.bodySmall)
                             .foregroundColor(.error)
                             .padding(.horizontal)
+                            .accessibilityLabel("Error")
+                            .accessibilityValue(errorMessage)
+                            .accessibilityAddTraits(.isStaticText)
                     }
 
                     // Terms and Conditions
@@ -109,22 +152,35 @@ struct RegisterView: View {
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
+                        .accessibilityLabel("Terms and conditions")
+                        .accessibilityHint("By signing up, you agree to our Terms of Service and Privacy Policy")
 
                     // Register Button
                     Button {
                         Task {
                             await viewModel.register()
-                            if viewModel.isAuthenticated {
+                            if viewModel.isRegistered {
                                 appState.isAuthenticated = true
                                 dismiss()
                             }
                         }
                     } label: {
-                        Text("Create Account")
-                            .primaryButtonStyle(isEnabled: !viewModel.isLoading)
+                        HStack {
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                Text("Creating Account...")
+                            } else {
+                                Text("Create Account")
+                            }
+                        }
+                        .primaryButtonStyle(isEnabled: !viewModel.isLoading)
                     }
                     .disabled(viewModel.isLoading)
                     .padding(.horizontal)
+                    .accessibilityLabel(viewModel.isLoading ? "Creating account" : "Create account")
+                    .accessibilityHint("Sign up with your information")
+                    .accessibilityIdentifier("registerButton")
 
                     // Divider
                     HStack {

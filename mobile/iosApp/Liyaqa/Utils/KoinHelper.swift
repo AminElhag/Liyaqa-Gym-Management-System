@@ -47,6 +47,22 @@ class KoinHelper {
         }
         return koin.get(objCClass: PaymentRepository.self) as! PaymentRepository
     }
+
+    // MARK: - Use Case Getters
+
+    func getLoginUseCase() -> LoginUseCase {
+        guard let koin = koin else {
+            fatalError("Koin not initialized. Call initKoin() first.")
+        }
+        return koin.get(objCClass: LoginUseCase.self) as! LoginUseCase
+    }
+
+    func getRegisterUseCase() -> RegisterUseCase {
+        guard let koin = koin else {
+            fatalError("Koin not initialized. Call initKoin() first.")
+        }
+        return koin.get(objCClass: RegisterUseCase.self) as! RegisterUseCase
+    }
 }
 
 // MARK: - Koin Helper Extension

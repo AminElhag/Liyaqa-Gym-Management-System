@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject private var viewModel = AuthViewModel()
+    @StateObject private var viewModel = LoginViewModel()
     @EnvironmentObject var appState: AppState
     @State private var showingRegister = false
     @State private var showingForgotPassword = false
@@ -44,6 +44,9 @@ struct LoginView: View {
                         .onSubmit {
                             focusedField = .password
                         }
+                        .accessibilityLabel("Email")
+                        .accessibilityHint("Enter your email address")
+                        .accessibilityIdentifier("loginEmailField")
 
                     // Password Field
                     SecureField("Password", text: $viewModel.password)
@@ -56,6 +59,9 @@ struct LoginView: View {
                                 await viewModel.login()
                             }
                         }
+                        .accessibilityLabel("Password")
+                        .accessibilityHint("Enter your password")
+                        .accessibilityIdentifier("loginPasswordField")
 
                     // Forgot Password
                     HStack {
@@ -77,29 +83,43 @@ struct LoginView: View {
                         .font(.bodySmall)
                         .foregroundColor(.error)
                         .padding(.horizontal)
+                        .accessibilityLabel("Error")
+                        .accessibilityValue(errorMessage)
+                        .accessibilityAddTraits(.isStaticText)
                 }
 
                 // Login Button
                 Button {
                     Task {
                         await viewModel.login()
-                        if viewModel.isAuthenticated {
+                        if viewModel.isLoggedIn {
                             appState.isAuthenticated = true
                         }
                     }
                 } label: {
-                    Text("Sign In")
-                        .primaryButtonStyle(isEnabled: !viewModel.isLoading)
+                    HStack {
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            Text("Signing In...")
+                        } else {
+                            Text("Sign In")
+                        }
+                    }
+                    .primaryButtonStyle(isEnabled: !viewModel.isLoading)
                 }
                 .disabled(viewModel.isLoading)
                 .padding(.horizontal)
+                .accessibilityLabel(viewModel.isLoading ? "Signing in" : "Sign in")
+                .accessibilityHint("Sign in with your email and password")
+                .accessibilityIdentifier("loginButton")
 
                 // Biometric Login
                 if BiometricAuthService.shared.biometricType != .none {
                     Button {
                         Task {
                             await viewModel.loginWithBiometrics()
-                            if viewModel.isAuthenticated {
+                            if viewModel.isLoggedIn {
                                 appState.isAuthenticated = true
                             }
                         }
@@ -111,6 +131,9 @@ struct LoginView: View {
                         .secondaryButtonStyle()
                     }
                     .padding(.horizontal)
+                    .accessibilityLabel("Sign in with \(BiometricAuthService.shared.biometricType == .faceID ? "Face ID" : "Touch ID")")
+                    .accessibilityHint("Use biometric authentication to sign in")
+                    .accessibilityIdentifier("biometricLoginButton")
                 }
 
                 // Divider
