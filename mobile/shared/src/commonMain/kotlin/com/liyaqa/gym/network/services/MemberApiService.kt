@@ -1,10 +1,11 @@
 package com.liyaqa.gym.network.services
 
-import com.liyaqa.gym.domain.Member
 import com.liyaqa.gym.network.ApiClient
 import com.liyaqa.gym.network.ApiConfig
 import com.liyaqa.gym.network.ApiResult
-import kotlinx.serialization.Serializable
+import com.liyaqa.gym.network.models.MemberListResponse
+import com.liyaqa.gym.network.models.MemberResponse
+import com.liyaqa.gym.network.models.UpdateProfileRequest
 
 /**
  * API service for member-related operations
@@ -16,10 +17,8 @@ interface MemberApiService {
         search: String? = null
     ): ApiResult<MemberListResponse>
 
-    suspend fun getMemberById(id: String): ApiResult<Member>
-    suspend fun createMember(request: CreateMemberRequest): ApiResult<Member>
-    suspend fun updateMember(id: String, request: UpdateMemberRequest): ApiResult<Member>
-    suspend fun deleteMember(id: String): ApiResult<Unit>
+    suspend fun getMemberById(id: String): ApiResult<MemberResponse>
+    suspend fun updateMember(id: String, request: UpdateProfileRequest): ApiResult<MemberResponse>
 }
 
 /**
@@ -43,55 +42,13 @@ class MemberApiServiceImpl(
         return apiClient.get(ApiConfig.Endpoints.MEMBERS, params)
     }
 
-    override suspend fun getMemberById(id: String): ApiResult<Member> {
+    override suspend fun getMemberById(id: String): ApiResult<MemberResponse> {
         val path = ApiConfig.Endpoints.MEMBER_BY_ID.replace("{id}", id)
         return apiClient.get(path)
     }
 
-    override suspend fun createMember(request: CreateMemberRequest): ApiResult<Member> {
-        return apiClient.post(ApiConfig.Endpoints.MEMBERS, request)
-    }
-
-    override suspend fun updateMember(id: String, request: UpdateMemberRequest): ApiResult<Member> {
+    override suspend fun updateMember(id: String, request: UpdateProfileRequest): ApiResult<MemberResponse> {
         val path = ApiConfig.Endpoints.MEMBER_BY_ID.replace("{id}", id)
         return apiClient.put(path, request)
     }
-
-    override suspend fun deleteMember(id: String): ApiResult<Unit> {
-        val path = ApiConfig.Endpoints.MEMBER_BY_ID.replace("{id}", id)
-        return apiClient.delete(path)
-    }
 }
-
-// Request/Response models
-@Serializable
-data class MemberListResponse(
-    val content: List<Member>,
-    val totalElements: Long,
-    val totalPages: Int,
-    val number: Int,
-    val size: Int
-)
-
-@Serializable
-data class CreateMemberRequest(
-    val branchId: String,
-    val name: String,
-    val nameArabic: String? = null,
-    val email: String,
-    val phone: String,
-    val nationalId: String? = null,
-    val gender: String,
-    val dateOfBirth: String? = null
-)
-
-@Serializable
-data class UpdateMemberRequest(
-    val name: String? = null,
-    val nameArabic: String? = null,
-    val email: String? = null,
-    val phone: String? = null,
-    val emergencyContactName: String? = null,
-    val emergencyContactPhone: String? = null,
-    val notes: String? = null
-)
