@@ -2,6 +2,13 @@ package com.liyaqa.gym.di
 
 import com.liyaqa.gym.database.DatabaseDriverFactory
 import com.liyaqa.gym.database.LiyaqaDatabase
+import com.liyaqa.gym.database.LiyaqaDatabaseWrapper
+import com.liyaqa.gym.database.dao.BookingDao
+import com.liyaqa.gym.database.dao.BookingDaoImpl
+import com.liyaqa.gym.database.dao.MemberDao
+import com.liyaqa.gym.database.dao.MemberDaoImpl
+import com.liyaqa.gym.database.dao.ScheduleDao
+import com.liyaqa.gym.database.dao.ScheduleDaoImpl
 import com.liyaqa.gym.network.ApiClient
 import com.liyaqa.gym.network.HttpClientFactory
 import com.liyaqa.gym.network.KtorApiClient
@@ -18,7 +25,25 @@ fun sharedModule(enableLogging: Boolean = true) = module {
     // Database
     single {
         val driverFactory: DatabaseDriverFactory = get()
-        LiyaqaDatabase(driverFactory.createDriver())
+        LiyaqaDatabaseWrapper(driverFactory)
+    }
+
+    single {
+        val wrapper: LiyaqaDatabaseWrapper = get()
+        wrapper.database
+    }
+
+    // DAOs
+    single<MemberDao> {
+        MemberDaoImpl(get())
+    }
+
+    single<ScheduleDao> {
+        ScheduleDaoImpl(get())
+    }
+
+    single<BookingDao> {
+        BookingDaoImpl(get())
     }
 
     // Network
