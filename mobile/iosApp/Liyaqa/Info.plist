@@ -75,6 +75,9 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Liyaqa uses Face ID for quick and secure authentication.</string>
 
+	<key>NFCReaderUsageDescription</key>
+	<string>Liyaqa uses NFC to enable quick check-in at the gym entrance.</string>
+
 	<!-- HealthKit Configuration -->
 	<key>NSHealthShareUsageDescription</key>
 	<string>Access workout and health data to track your fitness progress</string>
