@@ -54,6 +54,7 @@ class AndroidTokenStorage @Inject constructor(
             .remove(KEY_ACCESS_TOKEN)
             .remove(KEY_REFRESH_TOKEN)
             .remove(KEY_TOKEN_EXPIRATION)
+            .remove(KEY_MEMBER_ID)
             .apply()
     }
 
@@ -68,10 +69,21 @@ class AndroidTokenStorage @Inject constructor(
         return if (expiration != -1L) expiration else null
     }
 
+    override suspend fun saveMemberId(memberId: String) {
+        sharedPreferences.edit()
+            .putString(KEY_MEMBER_ID, memberId)
+            .apply()
+    }
+
+    override suspend fun getMemberId(): String? {
+        return sharedPreferences.getString(KEY_MEMBER_ID, null)
+    }
+
     companion object {
         private const val PREFS_NAME = "liyaqa_secure_prefs"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_TOKEN_EXPIRATION = "token_expiration"
+        private const val KEY_MEMBER_ID = "member_id"
     }
 }

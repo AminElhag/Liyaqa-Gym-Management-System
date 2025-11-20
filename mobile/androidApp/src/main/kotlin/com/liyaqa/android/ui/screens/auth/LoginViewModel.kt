@@ -100,6 +100,9 @@ class LoginViewModel @Inject constructor(
                     val expiresAt = System.currentTimeMillis() + (loginResponse.expiresIn * 1000)
                     tokenStorage.saveTokenExpiration(expiresAt)
 
+                    // Save member ID
+                    tokenStorage.saveMemberId(loginResponse.member.id)
+
                     _loginState.value = LoginState.Success
                 }
                 .onFailure { error ->

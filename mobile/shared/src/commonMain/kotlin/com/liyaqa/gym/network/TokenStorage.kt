@@ -46,6 +46,16 @@ interface TokenStorage {
         val expiresAt = getTokenExpiration() ?: return true
         return System.currentTimeMillis() >= expiresAt
     }
+
+    /**
+     * Save the current member ID
+     */
+    suspend fun saveMemberId(memberId: String)
+
+    /**
+     * Get the current member ID
+     */
+    suspend fun getMemberId(): String?
 }
 
 /**
@@ -55,6 +65,7 @@ class InMemoryTokenStorage : TokenStorage {
     private var accessToken: String? = null
     private var refreshToken: String? = null
     private var tokenExpiration: Long? = null
+    private var memberId: String? = null
 
     override suspend fun saveAccessToken(token: String) {
         accessToken = token
@@ -72,6 +83,7 @@ class InMemoryTokenStorage : TokenStorage {
         accessToken = null
         refreshToken = null
         tokenExpiration = null
+        memberId = null
     }
 
     override suspend fun saveTokenExpiration(expiresAt: Long) {
@@ -79,4 +91,10 @@ class InMemoryTokenStorage : TokenStorage {
     }
 
     override suspend fun getTokenExpiration(): Long? = tokenExpiration
+
+    override suspend fun saveMemberId(memberId: String) {
+        this.memberId = memberId
+    }
+
+    override suspend fun getMemberId(): String? = memberId
 }
