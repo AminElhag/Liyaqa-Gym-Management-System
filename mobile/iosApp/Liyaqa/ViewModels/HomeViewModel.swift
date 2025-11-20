@@ -4,85 +4,182 @@ import shared
 
 @MainActor
 class HomeViewModel: ObservableObject {
-    @Published var upcomingClasses: [GymClass] = []
-    @Published var recentActivities: [Activity] = []
-    @Published var membershipInfo: MembershipInfo?
-    @Published var stats: MemberStats?
+    // MARK: - Published Properties
+    @Published var memberName = ""
+    @Published var upcomingBookings: [BookingWithDetails] = []
+    @Published var activityStats: ActivityStats?
+    @Published var featuredClasses: [FeaturedClass] = []
+    @Published var unreadCount = 0
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let scheduleRepository: ScheduleRepository
-    private let memberRepository: MemberRepository
-    private var cancellables = Set<AnyCancellable>()
+    // MARK: - Use Cases
+    private let getMemberProfileUseCase: GetMemberProfileUseCase
+    private let getMyBookingsUseCase: GetMyBookingsUseCase
+    private let getSchedulesUseCase: GetSchedulesUseCase
+
+    // MARK: - Current Member ID
+    private var currentMemberId: String?
 
     init(
-        scheduleRepository: ScheduleRepository? = nil,
-        memberRepository: MemberRepository? = nil
+        getMemberProfileUseCase: GetMemberProfileUseCase? = nil,
+        getMyBookingsUseCase: GetMyBookingsUseCase? = nil,
+        getSchedulesUseCase: GetSchedulesUseCase? = nil
     ) {
-        // Get repositories from Koin
-        self.scheduleRepository = scheduleRepository ?? KoinHelper.shared.getScheduleRepository()
-        self.memberRepository = memberRepository ?? KoinHelper.shared.getMemberRepository()
+        // Get use cases from Koin
+        self.getMemberProfileUseCase = getMemberProfileUseCase ?? KoinHelper.shared.getMemberProfileUseCase()
+        self.getMyBookingsUseCase = getMyBookingsUseCase ?? KoinHelper.shared.getMyBookingsUseCase()
+        self.getSchedulesUseCase = getSchedulesUseCase ?? KoinHelper.shared.getSchedulesUseCase()
     }
 
-    func loadData() async {
+    // MARK: - Public Methods
+    func loadData() {
+        guard !isLoading else { return }
+
         isLoading = true
         errorMessage = nil
 
-        async let classesTask = loadUpcomingClasses()
-        async let activitiesTask = loadRecentActivities()
-        async let membershipTask = loadMembershipInfo()
-        async let statsTask = loadStats()
+        Task {
+            // Load all data concurrently
+            async let profile = loadProfile()
+            async let bookings = loadBookings()
+            async let stats = loadStats()
+            async let classes = loadFeaturedClasses()
 
-        await classesTask
-        await activitiesTask
-        await membershipTask
-        await statsTask
+            // Wait for all tasks to complete
+            let _ = await (profile, bookings, stats, classes)
 
-        isLoading = false
-    }
-
-    private func loadUpcomingClasses() async {
-        do {
-            // Fetch upcoming classes from repository
-            // This would use the shared Kotlin repository
-            // upcomingClasses = try await scheduleRepository.getUpcomingClasses()
-
-            // Mock data for now
-            upcomingClasses = []
-        } catch {
-            print("Error loading upcoming classes: \(error)")
+            isLoading = false
         }
     }
 
-    private func loadRecentActivities() async {
+    func refresh() async {
+        errorMessage = nil
+
+        async let profile = loadProfile()
+        async let bookings = loadBookings()
+        async let stats = loadStats()
+        async let classes = loadFeaturedClasses()
+
+        let _ = await (profile, bookings, stats, classes)
+    }
+
+    // MARK: - Private Methods
+    private func loadProfile() async {
         do {
-            // Fetch recent activities
-            recentActivities = []
+            // TODO: Get current member ID from authentication
+            // For now, use a mock member ID or get from stored user data
+            let memberId = currentMemberId ?? getMockMemberId()
+
+            let result = try await getMemberProfileUseCase.invoke(
+                memberId: memberId,
+                forceRefresh: false
+            )
+
+            if let member = try? result.getOrThrow() {
+                memberName = member.name
+                currentMemberId = member.id
+            } else {
+                // Use default name if profile loading fails
+                memberName = "Member"
+            }
         } catch {
-            print("Error loading activities: \(error)")
+            print("Error loading member profile: \(error)")
+            memberName = "Member"
+            errorMessage = "Failed to load profile"
         }
     }
 
-    private func loadMembershipInfo() async {
+    private func loadBookings() async {
         do {
-            // Fetch membership info
-            // membershipInfo = try await memberRepository.getMembershipInfo()
+            let memberId = currentMemberId ?? getMockMemberId()
+
+            let result = try await getMyBookingsUseCase.getUpcoming(
+                memberId: memberId,
+                forceRefresh: false
+            )
+
+            if let bookings = try? result.getOrThrow() {
+                // Convert Kotlin bookings to Swift models
+                // Note: This is a simplified version. You'll need to fetch full class details
+                self.upcomingBookings = bookings.prefix(3).map { booking in
+                    BookingWithDetails(
+                        id: booking.id,
+                        className: "Class \(booking.scheduleId)", // TODO: Fetch actual class name
+                        instructorName: nil, // TODO: Fetch from schedule
+                        startTime: Date(timeIntervalSince1970: Double(booking.bookedAt.epochSeconds)),
+                        status: booking.status.name,
+                        statusText: booking.statusDisplayText()
+                    )
+                }
+            }
         } catch {
-            print("Error loading membership: \(error)")
+            print("Error loading bookings: \(error)")
+            errorMessage = "Failed to load bookings"
         }
     }
 
     private func loadStats() async {
         do {
-            // Fetch member stats
-            // stats = try await memberRepository.getStats()
+            // TODO: Implement stats loading when API is available
+            // For now, use mock data or leave empty
+            activityStats = ActivityStats(
+                classesAttended: 0,
+                classesBooked: upcomingBookings.count,
+                totalWorkouts: 0,
+                currentStreak: 0
+            )
         } catch {
             print("Error loading stats: \(error)")
+            activityStats = ActivityStats.empty
         }
     }
 
-    func refresh() async {
-        await loadData()
+    private func loadFeaturedClasses() async {
+        do {
+            let result = try await getSchedulesUseCase.invoke(
+                branchId: nil, // Get all branches or use current branch
+                forceRefresh: false
+            )
+
+            if let schedules = try? result.getOrThrow() {
+                // Convert to featured classes (take first 5)
+                self.featuredClasses = schedules.prefix(5).map { schedule in
+                    FeaturedClass(
+                        id: schedule.id,
+                        name: "Class \(schedule.classId)", // TODO: Fetch actual class name
+                        instructorName: schedule.instructorName,
+                        startTime: convertLocalDateTimeToDate(schedule.startDateTime),
+                        capacity: Int(schedule.capacity),
+                        availableSpots: Int(schedule.availableSpots()),
+                        isFull: schedule.isFull()
+                    )
+                }
+            }
+        } catch {
+            print("Error loading featured classes: \(error)")
+            featuredClasses = []
+        }
+    }
+
+    // MARK: - Helper Methods
+    private func getMockMemberId() -> String {
+        // TODO: Get actual member ID from authentication
+        // For now, return a mock ID or stored user ID
+        return "mock-member-id"
+    }
+
+    private func convertLocalDateTimeToDate(_ localDateTime: shared.LocalDateTime) -> Date {
+        let calendar = Calendar.current
+        var components = DateComponents()
+        components.year = Int(localDateTime.year)
+        components.month = Int(localDateTime.monthNumber)
+        components.day = Int(localDateTime.dayOfMonth)
+        components.hour = Int(localDateTime.hour)
+        components.minute = Int(localDateTime.minute)
+        components.second = Int(localDateTime.second)
+
+        return calendar.date(from: components) ?? Date()
     }
 }
 
