@@ -1,0 +1,94 @@
+-- ClassSchedule table for offline caching
+CREATE TABLE ClassScheduleEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    classId TEXT NOT NULL,
+    className TEXT NOT NULL,
+    classNameArabic TEXT,
+    classType TEXT NOT NULL,
+    classLevel TEXT NOT NULL,
+    instructorId TEXT,
+    instructorName TEXT,
+    startDateTime TEXT NOT NULL,
+    endDateTime TEXT NOT NULL,
+    capacity INTEGER NOT NULL,
+    bookedCount INTEGER NOT NULL DEFAULT 0,
+    waitlistCount INTEGER NOT NULL DEFAULT 0,
+    isCancelled INTEGER NOT NULL DEFAULT 0,
+    cancellationReason TEXT,
+    notes TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    cachedAt TEXT NOT NULL
+);
+
+-- Indexes
+CREATE INDEX schedule_class_idx ON ClassScheduleEntity(classId);
+CREATE INDEX schedule_datetime_idx ON ClassScheduleEntity(startDateTime);
+CREATE INDEX schedule_instructor_idx ON ClassScheduleEntity(instructorId);
+
+-- Queries
+selectAll:
+SELECT * FROM ClassScheduleEntity ORDER BY startDateTime ASC;
+
+selectById:
+SELECT * FROM ClassScheduleEntity WHERE id = ?;
+
+selectByClassId:
+SELECT * FROM ClassScheduleEntity WHERE classId = ? ORDER BY startDateTime ASC;
+
+selectUpcoming:
+SELECT * FROM ClassScheduleEntity
+WHERE startDateTime >= datetime('now')
+  AND isCancelled = 0
+ORDER BY startDateTime ASC
+LIMIT ?;
+
+selectByDateRange:
+SELECT * FROM ClassScheduleEntity
+WHERE startDateTime >= ?
+  AND startDateTime < ?
+  AND isCancelled = 0
+ORDER BY startDateTime ASC;
+
+selectByInstructor:
+SELECT * FROM ClassScheduleEntity
+WHERE instructorId = ?
+ORDER BY startDateTime ASC;
+
+selectAvailable:
+SELECT * FROM ClassScheduleEntity
+WHERE startDateTime >= datetime('now')
+  AND isCancelled = 0
+  AND bookedCount < capacity
+ORDER BY startDateTime ASC
+LIMIT ?;
+
+insert:
+INSERT OR REPLACE INTO ClassScheduleEntity (
+    id, classId, className, classNameArabic, classType, classLevel,
+    instructorId, instructorName, startDateTime, endDateTime, capacity,
+    bookedCount, waitlistCount, isCancelled, cancellationReason, notes,
+    createdAt, updatedAt, cachedAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateBookedCount:
+UPDATE ClassScheduleEntity
+SET bookedCount = ?, waitlistCount = ?, updatedAt = ?
+WHERE id = ?;
+
+cancelSchedule:
+UPDATE ClassScheduleEntity
+SET isCancelled = 1, cancellationReason = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM ClassScheduleEntity WHERE id = ?;
+
+deleteOldSchedules:
+DELETE FROM ClassScheduleEntity WHERE endDateTime < ?;
+
+deleteAll:
+DELETE FROM ClassScheduleEntity;
+
+count:
+SELECT COUNT(*) FROM ClassScheduleEntity;

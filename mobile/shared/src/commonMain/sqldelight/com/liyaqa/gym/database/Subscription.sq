@@ -1,0 +1,74 @@
+-- Subscription table for offline caching
+CREATE TABLE SubscriptionEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    memberId TEXT NOT NULL,
+    planId TEXT NOT NULL,
+    planName TEXT,
+    startDate TEXT NOT NULL,
+    endDate TEXT,
+    status TEXT NOT NULL,
+    autoRenew INTEGER NOT NULL DEFAULT 0,
+    remainingVisits INTEGER,
+    pausedAt TEXT,
+    pausedUntil TEXT,
+    cancelledAt TEXT,
+    cancellationReason TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    cachedAt TEXT NOT NULL,
+    FOREIGN KEY (memberId) REFERENCES MemberEntity(id) ON DELETE CASCADE
+);
+
+-- Indexes
+CREATE INDEX subscription_member_idx ON SubscriptionEntity(memberId);
+CREATE INDEX subscription_status_idx ON SubscriptionEntity(status);
+CREATE INDEX subscription_dates_idx ON SubscriptionEntity(startDate, endDate);
+
+-- Queries
+selectAll:
+SELECT * FROM SubscriptionEntity ORDER BY startDate DESC;
+
+selectById:
+SELECT * FROM SubscriptionEntity WHERE id = ?;
+
+selectByMemberId:
+SELECT * FROM SubscriptionEntity WHERE memberId = ? ORDER BY startDate DESC;
+
+selectActiveByMemberId:
+SELECT * FROM SubscriptionEntity
+WHERE memberId = ? AND status = 'ACTIVE'
+ORDER BY startDate DESC;
+
+selectByStatus:
+SELECT * FROM SubscriptionEntity WHERE status = ? ORDER BY startDate DESC;
+
+selectExpiringSoon:
+SELECT * FROM SubscriptionEntity
+WHERE status = 'ACTIVE'
+  AND endDate IS NOT NULL
+  AND endDate <= date('now', '+7 days')
+ORDER BY endDate ASC;
+
+insert:
+INSERT OR REPLACE INTO SubscriptionEntity (
+    id, memberId, planId, planName, startDate, endDate, status,
+    autoRenew, remainingVisits, pausedAt, pausedUntil, cancelledAt,
+    cancellationReason, createdAt, updatedAt, cachedAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateStatus:
+UPDATE SubscriptionEntity
+SET status = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM SubscriptionEntity WHERE id = ?;
+
+deleteByMemberId:
+DELETE FROM SubscriptionEntity WHERE memberId = ?;
+
+deleteAll:
+DELETE FROM SubscriptionEntity;
+
+count:
+SELECT COUNT(*) FROM SubscriptionEntity;

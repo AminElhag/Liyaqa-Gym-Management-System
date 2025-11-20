@@ -2,6 +2,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version "2.1.0"
     id("com.android.library")
+    id("app.cash.sqldelight") version "2.0.2"
 }
 
 kotlin {
@@ -42,6 +43,13 @@ kotlin {
 
                 // DateTime
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+
+                // SQLDelight
+                implementation("app.cash.sqldelight:runtime:2.0.2")
+                implementation("app.cash.sqldelight:coroutines-extensions:2.0.2")
+
+                // Koin for dependency injection
+                implementation("io.insert-koin:koin-core:3.5.3")
             }
         }
 
@@ -55,6 +63,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-android:${rootProject.extra["ktorVersion"]}")
+                implementation("app.cash.sqldelight:android-driver:2.0.2")
             }
         }
 
@@ -69,7 +78,16 @@ kotlin {
 
             dependencies {
                 implementation("io.ktor:ktor-client-darwin:${rootProject.extra["ktorVersion"]}")
+                implementation("app.cash.sqldelight:native-driver:2.0.2")
             }
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("LiyaqaDatabase") {
+            packageName.set("com.liyaqa.gym.database")
         }
     }
 }
