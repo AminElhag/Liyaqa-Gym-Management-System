@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.liyaqa.android.ui.navigation.Screen
 import com.liyaqa.android.ui.theme.LiyaqaBrand
 import com.liyaqa.gym.domain.ClassSchedule
 import com.liyaqa.gym.domain.Member
@@ -155,7 +156,7 @@ fun QuickActionsRow(
             QuickActionButton(
                 icon = Icons.Default.QrCode,
                 label = "Check In",
-                onClick = onCheckIn
+                onClick = { navController.navigate(Screen.CheckIn.route) }
             )
             QuickActionButton(
                 icon = Icons.Default.CalendarToday,

@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.liyaqa.android.ui.screens.auth.LoginScreen
 import com.liyaqa.android.ui.screens.auth.RegisterScreen
+import com.liyaqa.android.ui.screens.checkin.CheckInScreen
 import com.liyaqa.android.ui.screens.classes.ClassDetailScreen
 import com.liyaqa.android.ui.screens.classes.ClassListScreen
 import com.liyaqa.android.ui.screens.home.HomeScreen
@@ -77,6 +78,11 @@ fun LiyaqaNavGraph(
             ClassDetailScreen(navController = navController)
         }
 
+        // Check-In Screen
+        composable(route = Screen.CheckIn.route) {
+            CheckInScreen(navController = navController)
+        }
+
         // TODO: Add more screens as they are implemented
         // - Booking screens
         // - Profile screen
@@ -129,4 +135,5 @@ sealed class Screen(val route: String) {
     data object Settings : Screen("settings")
     data object QRScanner : Screen("qr-scanner")
     data object Payment : Screen("payment")
+    data object CheckIn : Screen("checkin")
 }
