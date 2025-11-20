@@ -1,92 +1,50 @@
 import SwiftUI
+import shared
 
 struct ClassDetailView: View {
-    let gymClass: GymClass
-    @StateObject private var viewModel = ClassViewModel()
+    let schedule: shared.ClassSchedule
+    @StateObject private var viewModel: ClassDetailViewModel
     @State private var showingBookingConfirmation = false
+    @State private var showingCancelConfirmation = false
     @Environment(\.dismiss) var dismiss
+
+    init(schedule: shared.ClassSchedule) {
+        self.schedule = schedule
+        _viewModel = StateObject(wrappedValue: ClassDetailViewModel(schedule: schedule))
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Class Image
+                // Class header with image
                 classImage
 
-                // Class Info
-                VStack(alignment: .leading, spacing: 16) {
-                    // Title and Instructor
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(gymClass.name)
-                            .font(.headlineMedium)
-                            .foregroundColor(.textPrimary)
+                VStack(alignment: .leading, spacing: 12) {
+                    // Class name
+                    Text(schedule.classId)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.textPrimary)
 
-                        HStack {
-                            Image(systemName: "person.fill")
-                                .font(.caption)
-                            Text(gymClass.instructor)
-                                .font(.bodyMedium)
-                        }
-                        .foregroundColor(.textSecondary)
+                    // Trainer info
+                    if let trainerName = schedule.instructorName {
+                        trainerInfoSection(trainerName: trainerName)
                     }
 
                     Divider()
 
-                    // Details Grid
-                    VStack(spacing: 12) {
-                        DetailRow(
-                            icon: "calendar",
-                            title: "Date",
-                            value: gymClass.date.formatted(date: .abbreviated, time: .omitted)
-                        )
-
-                        DetailRow(
-                            icon: "clock",
-                            title: "Time",
-                            value: gymClass.date.formatted(date: .omitted, time: .shortened)
-                        )
-
-                        DetailRow(
-                            icon: "timer",
-                            title: "Duration",
-                            value: "\(gymClass.duration) minutes"
-                        )
-
-                        DetailRow(
-                            icon: "person.3.fill",
-                            title: "Capacity",
-                            value: "\(gymClass.enrolled)/\(gymClass.capacity)"
-                        )
-                    }
+                    // Class info
+                    classInfoSection
 
                     Divider()
 
                     // Description
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("About this class")
-                            .font(.titleSmall)
-                            .foregroundColor(.textPrimary)
-
-                        Text("Join us for an energizing workout session designed to help you reach your fitness goals. This class is suitable for all fitness levels and focuses on building strength, endurance, and flexibility.")
-                            .font(.bodyMedium)
-                            .foregroundColor(.textSecondary)
-                            .lineSpacing(4)
-                    }
+                    descriptionSection
 
                     Divider()
 
-                    // What to Bring
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("What to bring")
-                            .font(.titleSmall)
-                            .foregroundColor(.textPrimary)
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            BulletPoint(text: "Water bottle")
-                            BulletPoint(text: "Towel")
-                            BulletPoint(text: "Comfortable workout clothes")
-                            BulletPoint(text: "Athletic shoes")
-                        }
-                    }
+                    // What to bring
+                    whatToBringSection
 
                     // Availability Indicator
                     availabilityStatus
@@ -99,49 +57,165 @@ struct ClassDetailView: View {
         .safeAreaInset(edge: .bottom) {
             bookButton
         }
-        .alert("Book Class", isPresented: $showingBookingConfirmation) {
-            Button("Cancel", role: .cancel) { }
+        .confirmationDialog("Confirm Booking", isPresented: $showingBookingConfirmation) {
             Button("Confirm") {
                 Task {
-                    await viewModel.bookClass(gymClass)
+                    await viewModel.bookClass()
                 }
             }
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Are you sure you want to book \(gymClass.name)?")
+            Text("Book \(schedule.classId) on \(schedule.formattedDate)?")
+        }
+        .confirmationDialog("Cancel Booking", isPresented: $showingCancelConfirmation) {
+            Button("Cancel Booking", role: .destructive) {
+                Task {
+                    await viewModel.cancelBooking()
+                }
+            }
+            Button("Keep Booking", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to cancel this booking?")
+        }
+        .alert("Error", isPresented: $viewModel.showError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+            }
+        }
+        .alert("Success", isPresented: $viewModel.showSuccess) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let successMessage = viewModel.successMessage {
+                Text(successMessage)
+            }
         }
     }
 
     // MARK: - Class Image
     private var classImage: some View {
-        RoundedRectangle(cornerRadius: 0)
-            .fill(
-                LinearGradient(
-                    colors: [Color.liyaqaBrand.opacity(0.7), Color.liyaqaBrand],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+        ZStack {
+            LinearGradient(
+                colors: [schedule.classTypeEnum.color.opacity(0.7), schedule.classTypeEnum.color],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .frame(height: 200)
+
+            Image(systemName: schedule.classTypeEnum.icon)
+                .font(.system(size: 80))
+                .foregroundColor(.white.opacity(0.3))
+        }
+    }
+
+    // MARK: - Trainer Info Section
+    private func trainerInfoSection(trainerName: String) -> some View {
+        HStack(spacing: 12) {
+            // Trainer photo placeholder
+            Circle()
+                .fill(Color.liyaqaBrand.opacity(0.2))
+                .frame(width: 50, height: 50)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .foregroundColor(.liyaqaBrand)
                 )
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(trainerName)
+                    .font(.headline)
+                    .foregroundColor(.textPrimary)
+
+                Text("Certified Trainer")
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
+
+            Spacer()
+        }
+    }
+
+    // MARK: - Class Info Section
+    private var classInfoSection: some View {
+        VStack(spacing: 12) {
+            InfoRow(
+                icon: "calendar",
+                label: "Date",
+                value: schedule.formattedDate
             )
-            .frame(height: 250)
-            .overlay(
-                Image(systemName: "figure.run")
-                    .font(.system(size: 80))
-                    .foregroundColor(.white.opacity(0.3))
+
+            InfoRow(
+                icon: "clock",
+                label: "Time",
+                value: schedule.timeRange
             )
+
+            InfoRow(
+                icon: "timer",
+                label: "Duration",
+                value: schedule.duration
+            )
+
+            InfoRow(
+                icon: "person.3",
+                label: "Spots Available",
+                value: "\(Int(schedule.availableSpots()))/\(Int(schedule.capacity))"
+            )
+
+            if schedule.hasWaitlist() {
+                InfoRow(
+                    icon: "list.bullet",
+                    label: "Waitlist",
+                    value: "\(Int(schedule.waitlistCount)) people",
+                    iconColor: .warning
+                )
+            }
+        }
+    }
+
+    // MARK: - Description Section
+    private var descriptionSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("About This Class")
+                .font(.headline)
+                .foregroundColor(.textPrimary)
+
+            Text(schedule.notes ?? "Join us for an energizing workout session designed to help you reach your fitness goals. This class is suitable for all fitness levels and focuses on building strength, endurance, and flexibility.")
+                .font(.bodyMedium)
+                .foregroundColor(.textSecondary)
+                .lineSpacing(4)
+        }
+    }
+
+    // MARK: - What to Bring Section
+    private var whatToBringSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("What to bring")
+                .font(.headline)
+                .foregroundColor(.textPrimary)
+
+            VStack(alignment: .leading, spacing: 6) {
+                BulletPoint(text: "Water bottle")
+                BulletPoint(text: "Towel")
+                BulletPoint(text: "Comfortable workout clothes")
+                BulletPoint(text: "Athletic shoes")
+            }
+        }
     }
 
     // MARK: - Availability Status
     private var availabilityStatus: some View {
         HStack(spacing: 8) {
-            Image(systemName: spotsAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundColor(spotsAvailable ? .success : .error)
+            Image(systemName: statusIcon)
+                .foregroundColor(statusColor)
 
-            Text(spotsAvailable ? "\(spotsRemaining) spots available" : "Class is full")
+            Text(statusText)
                 .font(.bodyMedium)
                 .foregroundColor(.textPrimary)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(spotsAvailable ? Color.success.opacity(0.1) : Color.error.opacity(0.1))
+        .background(statusColor.opacity(0.1))
         .cornerRadius(12)
     }
 
@@ -151,48 +225,78 @@ struct ClassDetailView: View {
             Divider()
 
             Button {
-                showingBookingConfirmation = true
+                if viewModel.isBooked {
+                    showingCancelConfirmation = true
+                } else {
+                    showingBookingConfirmation = true
+                }
             } label: {
-                Text(spotsAvailable ? "Book Class" : "Join Waitlist")
-                    .primaryButtonStyle(isEnabled: !viewModel.bookingInProgress)
+                HStack {
+                    if viewModel.bookingInProgress {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text(buttonTitle)
+                    }
+                }
+                .primaryButtonStyle(isEnabled: !viewModel.bookingInProgress && !schedule.isCancelled)
             }
-            .disabled(viewModel.bookingInProgress)
+            .disabled(viewModel.bookingInProgress || (schedule.isFull() && !viewModel.isBooked) || schedule.isCancelled)
             .padding()
             .background(Color.surface)
         }
     }
 
-    private var spotsAvailable: Bool {
-        gymClass.enrolled < gymClass.capacity
+    // MARK: - Computed Properties
+    private var statusIcon: String {
+        if schedule.isCancelled {
+            return "xmark.circle.fill"
+        } else if viewModel.isBooked {
+            return "checkmark.circle.fill"
+        } else if schedule.isFull() {
+            return "exclamationmark.circle.fill"
+        } else if schedule.availableSpots() <= 3 {
+            return "exclamationmark.triangle.fill"
+        } else {
+            return "checkmark.circle.fill"
+        }
     }
 
-    private var spotsRemaining: Int {
-        max(0, gymClass.capacity - gymClass.enrolled)
+    private var statusColor: Color {
+        if schedule.isCancelled {
+            return .gray
+        } else if viewModel.isBooked {
+            return .liyaqaBrand
+        } else if schedule.isFull() {
+            return .error
+        } else if schedule.availableSpots() <= 3 {
+            return .warning
+        } else {
+            return .success
+        }
     }
-}
 
-// MARK: - Detail Row
-struct DetailRow: View {
-    let icon: String
-    let title: String
-    let value: String
+    private var statusText: String {
+        if schedule.isCancelled {
+            return "This class has been cancelled"
+        } else if viewModel.isBooked {
+            return "You have booked this class"
+        } else if schedule.isFull() {
+            return "Class is full - Join waitlist"
+        } else if schedule.availableSpots() <= 3 {
+            return "Hurry! Only \(Int(schedule.availableSpots())) spots remaining"
+        } else {
+            return "\(Int(schedule.availableSpots())) spots available"
+        }
+    }
 
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundColor(.liyaqaBrand)
-                .frame(width: 30)
-
-            Text(title)
-                .font(.bodyMedium)
-                .foregroundColor(.textSecondary)
-
-            Spacer()
-
-            Text(value)
-                .font(.bodyMedium)
-                .foregroundColor(.textPrimary)
+    private var buttonTitle: String {
+        if viewModel.isBooked {
+            return "Cancel Booking"
+        } else if schedule.isFull() {
+            return "Join Waitlist"
+        } else {
+            return "Book Class"
         }
     }
 }
@@ -216,15 +320,37 @@ struct BulletPoint: View {
 
 #Preview {
     NavigationView {
-        ClassDetailView(gymClass: GymClass(
+        ClassDetailView(schedule: shared.ClassSchedule(
             id: "1",
-            name: "HIIT Training",
-            instructor: "John Doe",
-            date: Date(),
-            duration: 45,
+            classId: "Yoga Flow",
+            instructorId: "instructor-1",
+            instructorName: "Sarah Johnson",
+            startDateTime: shared.LocalDateTime(
+                year: 2024,
+                monthNumber: 12,
+                dayOfMonth: 20,
+                hour: 9,
+                minute: 0,
+                second: 0,
+                nanosecond: 0
+            ),
+            endDateTime: shared.LocalDateTime(
+                year: 2024,
+                monthNumber: 12,
+                dayOfMonth: 20,
+                hour: 10,
+                minute: 0,
+                second: 0,
+                nanosecond: 0
+            ),
             capacity: 20,
-            enrolled: 15,
-            imageUrl: nil
+            bookedCount: 15,
+            waitlistCount: 0,
+            isCancelled: false,
+            cancellationReason: nil,
+            notes: "A relaxing yoga session perfect for all levels.",
+            createdAt: shared.Instant.Companion.shared.fromEpochMilliseconds(epochMilliseconds: 0),
+            updatedAt: shared.Instant.Companion.shared.fromEpochMilliseconds(epochMilliseconds: 0)
         ))
     }
 }
