@@ -1,0 +1,95 @@
+-- Invoice table for offline caching
+CREATE TABLE InvoiceEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    memberId TEXT NOT NULL,
+    subscriptionId TEXT,
+    amount REAL NOT NULL,
+    paidAmount REAL NOT NULL,
+    status TEXT NOT NULL,
+    dueDate TEXT NOT NULL,
+    paidAt TEXT,
+    notes TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    cachedAt TEXT NOT NULL,
+    FOREIGN KEY (memberId) REFERENCES MemberEntity(id) ON DELETE CASCADE,
+    FOREIGN KEY (subscriptionId) REFERENCES SubscriptionEntity(id) ON DELETE SET NULL
+);
+
+-- Invoice items table (for storing line items)
+CREATE TABLE InvoiceItemEntity (
+    invoiceId TEXT NOT NULL,
+    description TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    unitPrice REAL NOT NULL,
+    amount REAL NOT NULL,
+    FOREIGN KEY (invoiceId) REFERENCES InvoiceEntity(id) ON DELETE CASCADE
+);
+
+-- Indexes
+CREATE INDEX invoice_member_idx ON InvoiceEntity(memberId);
+CREATE INDEX invoice_subscription_idx ON InvoiceEntity(subscriptionId);
+CREATE INDEX invoice_status_idx ON InvoiceEntity(status);
+CREATE INDEX invoice_due_date_idx ON InvoiceEntity(dueDate);
+CREATE INDEX invoice_item_invoice_idx ON InvoiceItemEntity(invoiceId);
+
+-- Queries
+selectAll:
+SELECT * FROM InvoiceEntity ORDER BY dueDate DESC;
+
+selectById:
+SELECT * FROM InvoiceEntity WHERE id = ?;
+
+selectByMemberId:
+SELECT * FROM InvoiceEntity WHERE memberId = ? ORDER BY dueDate DESC;
+
+selectBySubscriptionId:
+SELECT * FROM InvoiceEntity WHERE subscriptionId = ? ORDER BY dueDate DESC;
+
+selectByStatus:
+SELECT * FROM InvoiceEntity WHERE status = ? ORDER BY dueDate DESC;
+
+selectOverdue:
+SELECT * FROM InvoiceEntity
+WHERE status IN ('PENDING', 'PARTIALLY_PAID', 'OVERDUE')
+  AND dueDate < date('now')
+ORDER BY dueDate ASC;
+
+selectItemsByInvoiceId:
+SELECT * FROM InvoiceItemEntity WHERE invoiceId = ?;
+
+insert:
+INSERT OR REPLACE INTO InvoiceEntity (
+    id, memberId, subscriptionId, amount, paidAmount, status,
+    dueDate, paidAt, notes, createdAt, updatedAt, cachedAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertItem:
+INSERT INTO InvoiceItemEntity (
+    invoiceId, description, quantity, unitPrice, amount
+) VALUES (?, ?, ?, ?, ?);
+
+updateStatus:
+UPDATE InvoiceEntity
+SET status = ?, updatedAt = ?
+WHERE id = ?;
+
+updatePaidAmount:
+UPDATE InvoiceEntity
+SET paidAmount = ?, status = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM InvoiceEntity WHERE id = ?;
+
+deleteItemsByInvoiceId:
+DELETE FROM InvoiceItemEntity WHERE invoiceId = ?;
+
+deleteByMemberId:
+DELETE FROM InvoiceEntity WHERE memberId = ?;
+
+deleteAll:
+DELETE FROM InvoiceEntity;
+
+count:
+SELECT COUNT(*) FROM InvoiceEntity;

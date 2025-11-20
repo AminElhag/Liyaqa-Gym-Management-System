@@ -1,0 +1,67 @@
+-- Payment table for offline caching
+CREATE TABLE PaymentEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    memberId TEXT NOT NULL,
+    subscriptionId TEXT NOT NULL,
+    amount REAL NOT NULL,
+    paymentMethod TEXT NOT NULL,
+    status TEXT NOT NULL,
+    transactionId TEXT,
+    description TEXT,
+    paidAt TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    cachedAt TEXT NOT NULL,
+    FOREIGN KEY (memberId) REFERENCES MemberEntity(id) ON DELETE CASCADE,
+    FOREIGN KEY (subscriptionId) REFERENCES SubscriptionEntity(id) ON DELETE CASCADE
+);
+
+-- Indexes
+CREATE INDEX payment_member_idx ON PaymentEntity(memberId);
+CREATE INDEX payment_subscription_idx ON PaymentEntity(subscriptionId);
+CREATE INDEX payment_status_idx ON PaymentEntity(status);
+CREATE INDEX payment_created_idx ON PaymentEntity(createdAt);
+
+-- Queries
+selectAll:
+SELECT * FROM PaymentEntity ORDER BY createdAt DESC;
+
+selectById:
+SELECT * FROM PaymentEntity WHERE id = ?;
+
+selectByMemberId:
+SELECT * FROM PaymentEntity WHERE memberId = ? ORDER BY createdAt DESC;
+
+selectBySubscriptionId:
+SELECT * FROM PaymentEntity WHERE subscriptionId = ? ORDER BY createdAt DESC;
+
+selectByStatus:
+SELECT * FROM PaymentEntity WHERE status = ? ORDER BY createdAt DESC;
+
+selectRecent:
+SELECT * FROM PaymentEntity
+WHERE createdAt >= date('now', '-30 days')
+ORDER BY createdAt DESC;
+
+insert:
+INSERT OR REPLACE INTO PaymentEntity (
+    id, memberId, subscriptionId, amount, paymentMethod, status,
+    transactionId, description, paidAt, createdAt, updatedAt, cachedAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateStatus:
+UPDATE PaymentEntity
+SET status = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM PaymentEntity WHERE id = ?;
+
+deleteByMemberId:
+DELETE FROM PaymentEntity WHERE memberId = ?;
+
+deleteAll:
+DELETE FROM PaymentEntity;
+
+count:
+SELECT COUNT(*) FROM PaymentEntity;
