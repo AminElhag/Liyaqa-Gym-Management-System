@@ -2,126 +2,82 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
-    @State private var showingProfile = false
+    @State private var showingNotifications = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Header
-                header
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Welcome section
+                    WelcomeSection(memberName: viewModel.memberName)
 
-                // Membership Status Card
-                if let membership = viewModel.membershipInfo {
-                    MembershipCard(membership: membership)
+                    // Quick actions
+                    QuickActionsGrid()
+
+                    // Upcoming bookings
+                    if !viewModel.upcomingBookings.isEmpty {
+                        UpcomingBookingsCard(bookings: viewModel.upcomingBookings)
+                    }
+
+                    // Activity summary
+                    if let stats = viewModel.activityStats {
+                        ActivitySummaryCard(stats: stats)
+                    }
+
+                    // Featured classes
+                    FeaturedClassesSection(classes: viewModel.featuredClasses)
                 }
-
-                // Quick Stats
-                if let stats = viewModel.stats {
-                    QuickStatsView(stats: stats)
-                }
-
-                // Upcoming Classes
-                upcomingClassesSection
-
-                // Recent Activity
-                recentActivitySection
-
-                Spacer(minLength: 20)
+                .padding()
             }
-            .padding(.horizontal)
-        }
-        .background(Color.background)
-        .navigationTitle("Home")
-        .navigationBarTitleDisplayMode(.large)
-        .refreshable {
-            await viewModel.refresh()
-        }
-        .task {
-            await viewModel.loadData()
-        }
-        .loading(viewModel.isLoading)
-    }
-
-    // MARK: - Header
-    private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Welcome back,")
-                    .font(.bodyMedium)
-                    .foregroundColor(.textSecondary)
-
-                Text("Fitness Enthusiast")
-                    .font(.headlineSmall)
-                    .foregroundColor(.textPrimary)
-            }
-
-            Spacer()
-
-            Button {
-                // Open notifications
-            } label: {
-                ZStack(alignment: .topTrailing) {
-                    Image(systemName: "bell.fill")
-                        .font(.title3)
-                        .foregroundColor(.textPrimary)
-
-                    // Notification badge
-                    Circle()
-                        .fill(Color.error)
-                        .frame(width: 8, height: 8)
-                        .offset(x: 4, y: -4)
-                }
-            }
-        }
-        .padding(.top)
-    }
-
-    // MARK: - Upcoming Classes Section
-    private var upcomingClassesSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Upcoming Classes")
-                    .font(.titleMedium)
-                    .foregroundColor(.textPrimary)
-
-                Spacer()
-
-                NavigationLink {
-                    ClassListView()
-                } label: {
-                    Text("See All")
-                        .font(.bodySmall)
-                        .foregroundColor(.liyaqaBrand)
-                }
-            }
-
-            if viewModel.upcomingClasses.isEmpty {
-                EmptyUpcomingClassesView()
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(viewModel.upcomingClasses) { gymClass in
-                            ClassCardCompact(gymClass: gymClass)
-                        }
+            .navigationTitle("Home")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingNotifications = true
+                    } label: {
+                        Image(systemName: "bell")
+                            .overlay(
+                                viewModel.unreadCount > 0 ?
+                                Badge(count: viewModel.unreadCount) : nil
+                            )
                     }
                 }
             }
+            .refreshable {
+                await viewModel.refresh()
+            }
         }
+        .tabItem {
+            Label("Home", systemImage: "house")
+        }
+        .onAppear {
+            viewModel.loadData()
+        }
+        .sheet(isPresented: $showingNotifications) {
+            NotificationsView()
+        }
+        .loading(viewModel.isLoading)
     }
+}
 
-    // MARK: - Recent Activity Section
-    private var recentActivitySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Activity")
-                .font(.titleMedium)
-                .foregroundColor(.textPrimary)
+// MARK: - Notifications View (Placeholder)
+struct NotificationsView: View {
+    @Environment(\.dismiss) var dismiss
 
-            if viewModel.recentActivities.isEmpty {
-                EmptyActivityView()
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(viewModel.recentActivities) { activity in
-                        ActivityRow(activity: activity)
+    var body: some View {
+        NavigationStack {
+            VStack {
+                Text("Notifications")
+                    .font(.largeTitle)
+                Text("No new notifications")
+                    .foregroundColor(.secondary)
+            }
+            .navigationTitle("Notifications")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
                     }
                 }
             }
@@ -389,7 +345,5 @@ struct EmptyActivityView: View {
 }
 
 #Preview {
-    NavigationView {
-        HomeView()
-    }
+    HomeView()
 }
