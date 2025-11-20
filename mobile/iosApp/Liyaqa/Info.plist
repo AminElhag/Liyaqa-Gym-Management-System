@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Liyaqa</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+	</dict>
+
+	<!-- URL Schemes for Deep Linking -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.liyaqa.gym</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>liyaqa</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Universal Links -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:liyaqa.com</string>
+		<string>applinks:www.liyaqa.com</string>
+	</array>
+
+	<!-- Privacy Permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>Liyaqa needs camera access to scan QR codes for check-in and member verification.</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Liyaqa needs access to your photo library to update your profile picture.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Liyaqa would like to save photos to your library.</string>
+
+	<key>NSHealthShareUsageDescription</key>
+	<string>Liyaqa would like to read your workout data to track your fitness progress and provide personalized recommendations.</string>
+
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Liyaqa would like to save your workout data to HealthKit to keep all your fitness information in one place.</string>
+
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Liyaqa sends you notifications about class bookings, schedule changes, and payment reminders.</string>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Liyaqa uses your location to find nearby gym facilities and enable location-based check-in.</string>
+
+	<key>NSFaceIDUsageDescription</key>
+	<string>Liyaqa uses Face ID for quick and secure authentication.</string>
+
+	<!-- HealthKit Configuration -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>Access workout and health data to track your fitness progress</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Save workout data to your Health app</string>
+
+	<!-- Background Modes -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+
+	<!-- Supported Device Orientations -->
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<!-- App Transport Security -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+
+	<!-- Minimum iOS Version -->
+	<key>MinimumOSVersion</key>
+	<string>15.0</string>
+</dict>
+</plist>
