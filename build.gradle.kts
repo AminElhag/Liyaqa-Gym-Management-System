@@ -23,7 +23,10 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "org.jetbrains.kotlin.jvm")
+    // Only apply Kotlin JVM plugin to backend and web modules, not mobile
+    if (!project.path.startsWith(":mobile")) {
+        apply(plugin = "org.jetbrains.kotlin.jvm")
+    }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
