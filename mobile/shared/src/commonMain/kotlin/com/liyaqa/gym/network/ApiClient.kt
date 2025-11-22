@@ -12,7 +12,7 @@ import kotlinx.serialization.SerializationException
  * Base API client abstract class with reified type parameters
  */
 abstract class ApiClient {
-    protected abstract val httpClient: HttpClient
+    abstract val httpClient: HttpClient
 
     suspend inline fun <reified T> get(
         path: String,
