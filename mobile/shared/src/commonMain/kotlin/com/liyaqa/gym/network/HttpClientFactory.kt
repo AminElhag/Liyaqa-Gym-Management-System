@@ -57,7 +57,7 @@ object HttpClientFactory {
             // Default request configuration
             defaultRequest {
                 url(ApiConfig.BASE_URL)
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             }
 
             // Authentication with Bearer tokens
@@ -116,15 +116,6 @@ object HttpClientFactory {
 
                 // Exponential backoff delay
                 exponentialDelay(base = 2.0, maxDelayMs = 10_000)
-
-                // Modify request before retry (e.g., refresh token)
-                modifyRequest { request ->
-                    tokenStorage?.let { storage ->
-                        storage.getAccessToken()?.let { token ->
-                            request.headers[HttpHeaders.Authorization] = "Bearer $token"
-                        }
-                    }
-                }
             }
         }
     }
