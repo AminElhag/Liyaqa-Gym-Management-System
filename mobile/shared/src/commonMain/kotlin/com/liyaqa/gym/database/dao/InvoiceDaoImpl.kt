@@ -113,7 +113,37 @@ class InvoiceDaoImpl(
     override suspend fun saveAll(invoices: List<Invoice>) = withContext(Dispatchers.Default) {
         database.transaction {
             invoices.forEach { invoice ->
-                save(invoice)
+                // First, delete existing items for this invoice
+                queries.deleteItemsByInvoiceId(invoice.id)
+
+                // Save the invoice
+                invoice.toEntity().let { entity ->
+                    queries.insert(
+                        id = entity.id,
+                        memberId = entity.memberId,
+                        subscriptionId = entity.subscriptionId,
+                        amount = entity.amount,
+                        paidAmount = entity.paidAmount,
+                        status = entity.status,
+                        dueDate = entity.dueDate,
+                        paidAt = entity.paidAt,
+                        notes = entity.notes,
+                        createdAt = entity.createdAt,
+                        updatedAt = entity.updatedAt,
+                        cachedAt = entity.cachedAt
+                    )
+                }
+
+                // Save the invoice items
+                invoice.items.forEach { item ->
+                    queries.insertItem(
+                        invoiceId = invoice.id,
+                        description = item.description,
+                        quantity = item.quantity.toLong(),
+                        unitPrice = item.unitPrice,
+                        amount = item.amount
+                    )
+                }
             }
         }
     }

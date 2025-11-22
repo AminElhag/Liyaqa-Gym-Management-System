@@ -92,7 +92,27 @@ class MemberDaoImpl(
     override suspend fun saveAll(members: List<Member>) = withContext(Dispatchers.Default) {
         database.transaction {
             members.forEach { member ->
-                save(member)
+                member.toEntity().let { entity ->
+                    queries.insert(
+                        id = entity.id,
+                        branchId = entity.branchId,
+                        name = entity.name,
+                        nameArabic = entity.nameArabic,
+                        email = entity.email,
+                        phone = entity.phone,
+                        nationalId = entity.nationalId,
+                        gender = entity.gender,
+                        dateOfBirth = entity.dateOfBirth,
+                        status = entity.status,
+                        profilePhotoUrl = entity.profilePhotoUrl,
+                        emergencyContactName = entity.emergencyContactName,
+                        emergencyContactPhone = entity.emergencyContactPhone,
+                        notes = entity.notes,
+                        createdAt = entity.createdAt,
+                        updatedAt = entity.updatedAt,
+                        cachedAt = entity.cachedAt
+                    )
+                }
             }
         }
     }

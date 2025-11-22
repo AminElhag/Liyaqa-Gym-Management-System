@@ -101,7 +101,26 @@ class SubscriptionDaoImpl(
     override suspend fun saveAll(subscriptions: List<Subscription>) = withContext(Dispatchers.Default) {
         database.transaction {
             subscriptions.forEach { subscription ->
-                save(subscription)
+                subscription.toEntity().let { entity ->
+                    queries.insert(
+                        id = entity.id,
+                        memberId = entity.memberId,
+                        planId = entity.planId,
+                        planName = entity.planName,
+                        startDate = entity.startDate,
+                        endDate = entity.endDate,
+                        status = entity.status,
+                        autoRenew = entity.autoRenew,
+                        remainingVisits = entity.remainingVisits,
+                        pausedAt = entity.pausedAt,
+                        pausedUntil = entity.pausedUntil,
+                        cancelledAt = entity.cancelledAt,
+                        cancellationReason = entity.cancellationReason,
+                        createdAt = entity.createdAt,
+                        updatedAt = entity.updatedAt,
+                        cachedAt = entity.cachedAt
+                    )
+                }
             }
         }
     }
