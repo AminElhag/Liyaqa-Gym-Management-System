@@ -14,7 +14,7 @@ import kotlinx.serialization.SerializationException
 abstract class ApiClient {
     protected abstract val httpClient: HttpClient
 
-    suspend fun <reified T> get(
+    suspend inline fun <reified T> get(
         path: String,
         queryParameters: Map<String, String> = emptyMap()
     ): ApiResult<T> = safeApiCall {
@@ -25,7 +25,7 @@ abstract class ApiClient {
         }.body<T>()
     }
 
-    suspend fun <reified T, reified R> post(
+    suspend inline fun <reified T, reified R> post(
         path: String,
         body: T
     ): ApiResult<R> = safeApiCall {
@@ -35,7 +35,7 @@ abstract class ApiClient {
         }.body<R>()
     }
 
-    suspend fun <reified T, reified R> put(
+    suspend inline fun <reified T, reified R> put(
         path: String,
         body: T
     ): ApiResult<R> = safeApiCall {
@@ -45,7 +45,7 @@ abstract class ApiClient {
         }.body<R>()
     }
 
-    suspend fun <reified T> delete(path: String): ApiResult<T> = safeApiCall {
+    suspend inline fun <reified T> delete(path: String): ApiResult<T> = safeApiCall {
         httpClient.delete(path).body<T>()
     }
 
