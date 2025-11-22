@@ -75,7 +75,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
         // Close modal after 2 seconds
         setTimeout(() => {
-          if (onClose && !required) {
+          if (onClose) {
             onClose();
           }
           setSuccess(false);
