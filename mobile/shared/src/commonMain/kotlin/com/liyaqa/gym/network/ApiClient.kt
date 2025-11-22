@@ -9,64 +9,47 @@ import io.ktor.http.*
 import kotlinx.serialization.SerializationException
 
 /**
- * Base API client interface
+ * Base API client abstract class with reified type parameters
  */
-interface ApiClient {
-    suspend fun <T> get(
+abstract class ApiClient {
+    protected abstract val httpClient: HttpClient
+
+    suspend inline fun <reified T> get(
         path: String,
         queryParameters: Map<String, String> = emptyMap()
-    ): ApiResult<T>
-
-    suspend fun <T, R> post(
-        path: String,
-        body: T
-    ): ApiResult<R>
-
-    suspend fun <T, R> put(
-        path: String,
-        body: T
-    ): ApiResult<R>
-
-    suspend fun <T> delete(path: String): ApiResult<T>
-}
-
-/**
- * Default implementation of ApiClient using Ktor
- */
-class KtorApiClient(
-    private val httpClient: HttpClient
-) : ApiClient {
-
-    override suspend fun <T> get(
-        path: String,
-        queryParameters: Map<String, String>
     ): ApiResult<T> = safeApiCall {
         httpClient.get(path) {
             queryParameters.forEach { (key, value) ->
                 parameter(key, value)
             }
-        }.body()
+        }.body<T>()
     }
 
-    override suspend fun <T, R> post(path: String, body: T): ApiResult<R> = safeApiCall {
+    suspend inline fun <T, reified R> post(
+        path: String,
+        body: T
+    ): ApiResult<R> = safeApiCall {
         httpClient.post(path) {
             contentType(ContentType.Application.Json)
             setBody(body)
-        }.body()
+        }.body<R>()
     }
 
-    override suspend fun <T, R> put(path: String, body: T): ApiResult<R> = safeApiCall {
+    suspend inline fun <T, reified R> put(
+        path: String,
+        body: T
+    ): ApiResult<R> = safeApiCall {
         httpClient.put(path) {
             contentType(ContentType.Application.Json)
             setBody(body)
-        }.body()
+        }.body<R>()
     }
 
-    override suspend fun <T> delete(path: String): ApiResult<T> = safeApiCall {
-        httpClient.delete(path).body()
+    suspend inline fun <reified T> delete(path: String): ApiResult<T> = safeApiCall {
+        httpClient.delete(path).body<T>()
     }
 
-    private suspend fun <T> safeApiCall(apiCall: suspend () -> T): ApiResult<T> {
+    suspend inline fun <reified T> safeApiCall(apiCall: () -> T): ApiResult<T> {
         return try {
             ApiResult.Success(apiCall())
         } catch (e: ClientRequestException) {
@@ -107,3 +90,10 @@ class KtorApiClient(
         }
     }
 }
+
+/**
+ * Default implementation of ApiClient using Ktor
+ */
+class KtorApiClient(
+    override val httpClient: HttpClient
+) : ApiClient()
