@@ -136,11 +136,13 @@ Navigate to the web directory:
 cd web
 ```
 
-Copy the example environment file and configure it:
+**CRITICAL:** Copy the example environment file and configure it:
 
 ```bash
 cp .env.example .env
 ```
+
+> ⚠️ **Important:** The `.env` file is required for the web application to work. Without it, you will get **404 errors** when logging in or making API calls. This file is not tracked by git for security reasons.
 
 Install dependencies:
 
