@@ -27,7 +27,7 @@
 
         <!-- Main Activity -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.liyaqa.android.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.LiyaqaGym"
             android:windowSoftInputMode="adjustResize"
@@ -65,7 +65,7 @@
 
         <!-- Firebase Cloud Messaging Service -->
         <service
-            android:name=".service.LiyaqaFirebaseMessagingService"
+            android:name="com.liyaqa.android.service.LiyaqaFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
