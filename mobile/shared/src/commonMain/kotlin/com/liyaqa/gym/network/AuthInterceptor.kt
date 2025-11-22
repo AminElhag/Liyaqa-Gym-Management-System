@@ -34,20 +34,20 @@ class AuthInterceptor(
             }
 
             // Execute the request
-            var response = execute(request)
+            val originalResponse = execute(request)
 
             // If we get 401, try to refresh the token and retry
-            if (response.status == HttpStatusCode.Unauthorized &&
+            if (originalResponse.response.status == HttpStatusCode.Unauthorized &&
                 !request.url.encodedPath.contains("/auth/refresh")) {
 
-                response = handleUnauthorized(request) ?: response
+                handleUnauthorized(request) ?: originalResponse
+            } else {
+                originalResponse
             }
-
-            response
         }
     }
 
-    private suspend fun handleUnauthorized(request: HttpRequestBuilder): HttpResponse? {
+    private suspend fun handleUnauthorized(request: HttpRequestBuilder): HttpClientCall? {
         mutex.withLock {
             // Check if token is already being refreshed by another request
             if (isRefreshing) {

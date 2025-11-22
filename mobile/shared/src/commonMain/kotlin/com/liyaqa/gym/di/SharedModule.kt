@@ -62,7 +62,7 @@ fun sharedModule(enableLogging: Boolean = true) = module {
     single {
         HttpClientFactory.create(
             enableLogging = enableLogging,
-            tokenProvider = null // TODO: Implement token provider
+            tokenStorage = null // TODO: Implement token storage
         )
     }
 

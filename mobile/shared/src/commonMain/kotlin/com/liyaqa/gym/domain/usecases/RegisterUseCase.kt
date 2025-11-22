@@ -41,7 +41,7 @@ class RegisterUseCase(
             when (val result = authApiService.register(name, email, phone, password, nationalId)) {
                 is ApiResult.Success -> Result.success(result.data)
                 is ApiResult.Error -> Result.failure(
-                    Exception(result.message ?: "Registration failed")
+                    Exception(result.error.message ?: "Registration failed")
                 )
             }
         } catch (e: Exception) {
