@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/features/auth/authSlice';
 import membersReducer from '@/features/members/membersSlice';
 import classesReducer from '@/features/classes/classesSlice';
+import dashboardReducer from '@/features/dashboard/dashboardSlice';
 import { apiSlice } from './apiSlice';
 
 export const store = configureStore({
@@ -9,6 +10,7 @@ export const store = configureStore({
     auth: authReducer,
     members: membersReducer,
     classes: classesReducer,
+    dashboard: dashboardReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
