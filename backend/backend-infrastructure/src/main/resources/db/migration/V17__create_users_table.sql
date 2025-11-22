@@ -56,13 +56,13 @@ VALUES (
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Insert master admin account
--- Username: admin
+-- Username: admin@liyaqa.com
 -- Password: 1234
 -- BCrypt hash with strength 12: $2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN96mXPtG2.8OmG5G3VJq
 INSERT INTO users (id, email, password_hash, role, organization_id, branch_id, member_id, staff_id, is_active, is_email_verified, must_change_password, created_at, updated_at)
 VALUES (
     '00000000-0000-0000-0000-000000000002'::UUID,
-    'admin',
+    'admin@liyaqa.com',
     '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN96mXPtG2.8OmG5G3VJq',
     'ADMIN',
     '00000000-0000-0000-0000-000000000001'::UUID,
