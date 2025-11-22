@@ -16,7 +16,7 @@
     <!-- Notification permission (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
-        android:name=".LiyaqaApplication"
+        android:name="com.liyaqa.android.LiyaqaApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
