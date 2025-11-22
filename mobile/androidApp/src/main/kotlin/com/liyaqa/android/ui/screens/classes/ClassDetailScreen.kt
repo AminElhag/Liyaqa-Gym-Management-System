@@ -485,11 +485,11 @@ private fun ClassInfoCard(
                 value = gymClass.levelDescription()
             )
 
-            if (gymClass.genderRestriction != null) {
+            gymClass.genderRestriction?.let { gender ->
                 DetailRow(
                     icon = Icons.Default.Person,
                     label = "Gender Restriction",
-                    value = gymClass.genderRestriction.name.lowercase()
+                    value = gender.name.lowercase()
                         .replaceFirstChar { it.uppercase() }
                 )
             }

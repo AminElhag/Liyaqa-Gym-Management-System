@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#FF6B35" rx="80"/>
+
+  <!-- Dumbbell Icon (Gym Theme) -->
+  <g transform="translate(128, 200)">
+    <!-- Left weight plate -->
+    <rect x="0" y="20" width="40" height="80" fill="#FFFFFF" rx="8"/>
+    <rect x="8" y="28" width="24" height="64" fill="#E8E8E8" rx="4"/>
+
+    <!-- Bar -->
+    <rect x="40" y="50" width="176" height="20" fill="#FFFFFF" rx="4"/>
+
+    <!-- Center grip -->
+    <rect x="100" y="45" width="56" height="30" fill="#E8E8E8" rx="6"/>
+    <line x1="120" y1="45" x2="120" y2="75" stroke="#CCCCCC" stroke-width="2"/>
+    <line x1="136" y1="45" x2="136" y2="75" stroke="#CCCCCC" stroke-width="2"/>
+
+    <!-- Right weight plate -->
+    <rect x="216" y="20" width="40" height="80" fill="#FFFFFF" rx="8"/>
+    <rect x="224" y="28" width="24" height="64" fill="#E8E8E8" rx="4"/>
+  </g>
+
+  <!-- App Name -->
+  <text x="256" y="390" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#FFFFFF" text-anchor="middle">LIYAQA</text>
+  <text x="256" y="440" font-family="Arial, sans-serif" font-size="28" fill="#FFE8E0" text-anchor="middle">Gym Manager</text>
+</svg>

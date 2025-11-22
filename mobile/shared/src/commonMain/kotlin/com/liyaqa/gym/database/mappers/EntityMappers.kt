@@ -34,6 +34,29 @@ fun SubscriptionEntity.toDomain(): Subscription {
 }
 
 /**
+ * Convert SelectExpiringSoon to Subscription domain model
+ */
+fun SelectExpiringSoon.toDomain(): Subscription {
+    return Subscription(
+        id = id,
+        memberId = memberId,
+        planId = planId,
+        planName = planName,
+        startDate = LocalDate.parse(startDate),
+        endDate = LocalDate.parse(endDate),
+        status = SubscriptionStatus.valueOf(status),
+        autoRenew = autoRenew != 0L,
+        remainingVisits = remainingVisits?.toInt(),
+        pausedAt = pausedAt?.let { LocalDate.parse(it) },
+        pausedUntil = pausedUntil?.let { LocalDate.parse(it) },
+        cancelledAt = cancelledAt?.let { Instant.parse(it) },
+        cancellationReason = cancellationReason,
+        createdAt = Instant.parse(createdAt),
+        updatedAt = Instant.parse(updatedAt)
+    )
+}
+
+/**
  * Convert Subscription domain model to SubscriptionEntity
  */
 fun Subscription.toEntity(): SubscriptionEntity {

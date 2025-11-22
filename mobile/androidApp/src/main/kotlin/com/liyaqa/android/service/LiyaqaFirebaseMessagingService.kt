@@ -9,7 +9,6 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.liyaqa.android.LiyaqaApplication
 import com.liyaqa.android.MainActivity
-import com.liyaqa.android.R
 import kotlin.random.Random
 
 /**
@@ -122,8 +121,7 @@ class LiyaqaFirebaseMessagingService : FirebaseMessagingService() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(body)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setColor(getColor(R.color.notification_color))
+            .setSmallIcon(android.R.drawable.ic_dialog_info) // Using Android system icon as placeholder
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)

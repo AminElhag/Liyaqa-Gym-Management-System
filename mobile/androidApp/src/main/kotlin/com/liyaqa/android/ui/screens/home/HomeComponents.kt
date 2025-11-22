@@ -285,9 +285,9 @@ private fun BookingItem(
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
-                schedule?.let {
+                schedule?.let { sch: ClassSchedule ->
                     Text(
-                        text = DateFormatter().formatDateTime(it.startDateTime),
+                        text = DateFormatter().formatShortDateTime(sch.startDateTime),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

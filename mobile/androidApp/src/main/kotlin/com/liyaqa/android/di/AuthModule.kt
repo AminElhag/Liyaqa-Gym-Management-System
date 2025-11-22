@@ -15,6 +15,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.ktor.client.HttpClient
 import javax.inject.Singleton
 
 /**
@@ -36,7 +37,7 @@ object AuthModule {
     @Singleton
     fun provideHttpClient(
         tokenStorage: TokenStorage
-    ): io.ktor.client.HttpClient {
+    ): HttpClient {
         return HttpClientFactory.create(
             enableLogging = true,
             tokenStorage = tokenStorage,
@@ -50,7 +51,7 @@ object AuthModule {
     @Provides
     @Singleton
     fun provideApiClient(
-        httpClient: io.ktor.client.HttpClient
+        httpClient: HttpClient
     ): ApiClient {
         return KtorApiClient(httpClient)
     }

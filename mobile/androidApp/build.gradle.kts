@@ -120,6 +120,22 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.extra["coroutinesVersion"]}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${rootProject.extra["coroutinesVersion"]}")
 
+    // Kotlinx libraries (from shared module)
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${rootProject.extra["serializationVersion"]}")
+
+    // Ktor Client (from shared module)
+    implementation("io.ktor:ktor-client-core:${rootProject.extra["ktorVersion"]}")
+    implementation("io.ktor:ktor-client-android:${rootProject.extra["ktorVersion"]}")
+    implementation("io.ktor:ktor-client-content-negotiation:${rootProject.extra["ktorVersion"]}")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:${rootProject.extra["ktorVersion"]}")
+    implementation("io.ktor:ktor-client-logging:${rootProject.extra["ktorVersion"]}")
+    implementation("io.ktor:ktor-client-auth:${rootProject.extra["ktorVersion"]}")
+
+    // Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended:1.7.6")
+    implementation("androidx.compose.material:material:1.7.6")
+
     // Koin (for compatibility with shared module)
     implementation("io.insert-koin:koin-android:4.0.1")
     implementation("io.insert-koin:koin-androidx-compose:4.0.1")
