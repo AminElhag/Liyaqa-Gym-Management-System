@@ -2,6 +2,25 @@
 
 This guide covers debugging the React + Vite web application using both IntelliJ IDEA and browser-based tools.
 
+## Prerequisites: Environment Setup
+
+**IMPORTANT:** Before running the web application, you MUST create a `.env` file:
+
+```bash
+cd web
+cp .env.example .env
+```
+
+The `.env` file should contain:
+```
+VITE_API_BASE_URL=http://localhost:8080/api/v1
+VITE_WS_URL=ws://localhost:8080/ws
+```
+
+Without this file, API requests will fail with **404 errors** because the API base URL will be undefined.
+
+You must also ensure the backend is running on `http://localhost:8080` before using the web application. See the main README.md for backend setup instructions.
+
 ## Option 1: Debugging in IntelliJ IDEA
 
 ### Prerequisites
