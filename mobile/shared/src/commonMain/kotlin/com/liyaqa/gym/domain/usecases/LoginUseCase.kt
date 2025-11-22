@@ -25,7 +25,7 @@ class LoginUseCase(
             when (val result = authApiService.login(email, password)) {
                 is ApiResult.Success -> Result.success(result.data)
                 is ApiResult.Error -> Result.failure(
-                    Exception(result.message ?: "Login failed")
+                    Exception(result.error.message ?: "Login failed")
                 )
             }
         } catch (e: Exception) {

@@ -141,8 +141,8 @@ fun InvoiceResponse.toDomain(): Invoice {
 /**
  * Convert InvoiceItem network model to domain model
  */
-fun com.liyaqa.gym.network.models.InvoiceItem.toDomain(): InvoiceItem {
-    return InvoiceItem(
+fun com.liyaqa.gym.network.models.InvoiceItem.toDomain(): com.liyaqa.gym.domain.InvoiceItem {
+    return com.liyaqa.gym.domain.InvoiceItem(
         description = description,
         quantity = quantity,
         unitPrice = unitPrice,

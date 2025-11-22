@@ -8,6 +8,9 @@ import com.liyaqa.gym.network.mappers.toDomain
 import com.liyaqa.gym.network.services.ClassApiService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.atTime
 import kotlin.time.Duration.Companion.minutes
 
 /**
@@ -66,6 +69,16 @@ class ScheduleRepositoryImpl(
 
     private val cacheMaxAge = 30.minutes
 
+    /**
+     * Convert LocalDate to LocalDateTime at start of day (00:00:00)
+     */
+    private fun LocalDate.atStartOfDay(): LocalDateTime = this.atTime(0, 0, 0)
+
+    /**
+     * Convert LocalDate to LocalDateTime at end of day (23:59:59)
+     */
+    private fun LocalDate.atEndOfDay(): LocalDateTime = this.atTime(23, 59, 59)
+
     override suspend fun getSchedules(
         startDate: LocalDate,
         endDate: LocalDate,
@@ -73,7 +86,7 @@ class ScheduleRepositoryImpl(
     ): Result<List<ClassSchedule>> {
         // Try to get cached data first (offline-first approach)
         if (!forceRefresh) {
-            val cached = scheduleDao.getByDateRange(startDate, endDate)
+            val cached = scheduleDao.getByDateRange(startDate.atStartOfDay(), endDate.atEndOfDay())
             if (cached.isNotEmpty()) {
                 // Return cached data immediately
                 // Background sync will happen separately
@@ -84,7 +97,7 @@ class ScheduleRepositoryImpl(
         // Check connectivity
         if (!connectivityMonitor.isConnected()) {
             // Offline: return cached data
-            val cached = scheduleDao.getByDateRange(startDate, endDate)
+            val cached = scheduleDao.getByDateRange(startDate.atStartOfDay(), endDate.atEndOfDay())
             return if (cached.isNotEmpty()) {
                 Result.success(cached)
             } else {
@@ -106,7 +119,7 @@ class ScheduleRepositoryImpl(
             }
             is ApiResult.Error -> {
                 // Network error: try to return cached data as fallback
-                val cached = scheduleDao.getByDateRange(startDate, endDate)
+                val cached = scheduleDao.getByDateRange(startDate.atStartOfDay(), endDate.atEndOfDay())
                 if (cached.isNotEmpty()) {
                     Result.success(cached)
                 } else {
@@ -143,7 +156,7 @@ class ScheduleRepositoryImpl(
     }
 
     override fun observeSchedules(startDate: LocalDate, endDate: LocalDate): Flow<List<ClassSchedule>> {
-        return scheduleDao.observeByDateRange(startDate, endDate)
+        return scheduleDao.observeByDateRange(startDate.atStartOfDay(), endDate.atEndOfDay())
     }
 
     override suspend fun syncSchedules(startDate: LocalDate, endDate: LocalDate) {
