@@ -136,6 +136,12 @@ Navigate to the web directory:
 cd web
 ```
 
+Copy the example environment file and configure it:
+
+```bash
+cp .env.example .env
+```
+
 Install dependencies:
 
 ```bash
