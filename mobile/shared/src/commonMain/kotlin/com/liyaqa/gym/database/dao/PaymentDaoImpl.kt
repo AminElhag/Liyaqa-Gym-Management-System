@@ -96,7 +96,22 @@ class PaymentDaoImpl(
     override suspend fun saveAll(payments: List<Payment>) = withContext(Dispatchers.Default) {
         database.transaction {
             payments.forEach { payment ->
-                save(payment)
+                payment.toEntity().let { entity ->
+                    queries.insert(
+                        id = entity.id,
+                        memberId = entity.memberId,
+                        subscriptionId = entity.subscriptionId,
+                        amount = entity.amount,
+                        paymentMethod = entity.paymentMethod,
+                        status = entity.status,
+                        transactionId = entity.transactionId,
+                        description = entity.description,
+                        paidAt = entity.paidAt,
+                        createdAt = entity.createdAt,
+                        updatedAt = entity.updatedAt,
+                        cachedAt = entity.cachedAt
+                    )
+                }
             }
         }
     }

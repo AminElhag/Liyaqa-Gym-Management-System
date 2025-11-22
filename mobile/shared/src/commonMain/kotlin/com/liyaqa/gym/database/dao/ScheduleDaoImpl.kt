@@ -119,7 +119,29 @@ class ScheduleDaoImpl(
     override suspend fun saveAll(schedules: List<ClassSchedule>) = withContext(Dispatchers.Default) {
         database.transaction {
             schedules.forEach { schedule ->
-                save(schedule)
+                schedule.toEntity().let { entity ->
+                    queries.insert(
+                        id = entity.id,
+                        classId = entity.classId,
+                        className = entity.className,
+                        classNameArabic = entity.classNameArabic,
+                        classType = entity.classType,
+                        classLevel = entity.classLevel,
+                        instructorId = entity.instructorId,
+                        instructorName = entity.instructorName,
+                        startDateTime = entity.startDateTime,
+                        endDateTime = entity.endDateTime,
+                        capacity = entity.capacity,
+                        bookedCount = entity.bookedCount,
+                        waitlistCount = entity.waitlistCount,
+                        isCancelled = entity.isCancelled,
+                        cancellationReason = entity.cancellationReason,
+                        notes = entity.notes,
+                        createdAt = entity.createdAt,
+                        updatedAt = entity.updatedAt,
+                        cachedAt = entity.cachedAt
+                    )
+                }
             }
         }
     }

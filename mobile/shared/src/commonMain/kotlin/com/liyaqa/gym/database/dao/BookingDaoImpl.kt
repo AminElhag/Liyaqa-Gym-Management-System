@@ -111,7 +111,24 @@ class BookingDaoImpl(
     override suspend fun saveAll(bookings: List<Booking>) = withContext(Dispatchers.Default) {
         database.transaction {
             bookings.forEach { booking ->
-                save(booking)
+                booking.toEntity().let { entity ->
+                    queries.insert(
+                        id = entity.id,
+                        memberId = entity.memberId,
+                        scheduleId = entity.scheduleId,
+                        status = entity.status,
+                        bookedAt = entity.bookedAt,
+                        waitlistPosition = entity.waitlistPosition,
+                        confirmedAt = entity.confirmedAt,
+                        checkedInAt = entity.checkedInAt,
+                        cancelledAt = entity.cancelledAt,
+                        cancellationReason = entity.cancellationReason,
+                        noShowMarkedAt = entity.noShowMarkedAt,
+                        createdAt = entity.createdAt,
+                        updatedAt = entity.updatedAt,
+                        cachedAt = entity.cachedAt
+                    )
+                }
             }
         }
     }

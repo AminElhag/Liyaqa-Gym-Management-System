@@ -40,7 +40,7 @@ selectByMemberAndSchedule:
 SELECT * FROM BookingEntity WHERE memberId = ? AND scheduleId = ?;
 
 selectUpcomingByMember:
-SELECT b.*, s.startDateTime
+SELECT b.*
 FROM BookingEntity b
 INNER JOIN ClassScheduleEntity s ON b.scheduleId = s.id
 WHERE b.memberId = ?

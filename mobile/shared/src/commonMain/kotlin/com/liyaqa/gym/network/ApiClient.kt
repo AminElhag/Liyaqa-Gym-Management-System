@@ -14,7 +14,7 @@ import kotlinx.serialization.SerializationException
 abstract class ApiClient {
     protected abstract val httpClient: HttpClient
 
-    suspend inline fun <reified T> get(
+    suspend fun <reified T> get(
         path: String,
         queryParameters: Map<String, String> = emptyMap()
     ): ApiResult<T> = safeApiCall {
@@ -25,7 +25,7 @@ abstract class ApiClient {
         }.body<T>()
     }
 
-    suspend inline fun <T, reified R> post(
+    suspend fun <reified T, reified R> post(
         path: String,
         body: T
     ): ApiResult<R> = safeApiCall {
@@ -35,7 +35,7 @@ abstract class ApiClient {
         }.body<R>()
     }
 
-    suspend inline fun <T, reified R> put(
+    suspend fun <reified T, reified R> put(
         path: String,
         body: T
     ): ApiResult<R> = safeApiCall {
@@ -45,11 +45,11 @@ abstract class ApiClient {
         }.body<R>()
     }
 
-    suspend inline fun <reified T> delete(path: String): ApiResult<T> = safeApiCall {
+    suspend fun <reified T> delete(path: String): ApiResult<T> = safeApiCall {
         httpClient.delete(path).body<T>()
     }
 
-    suspend inline fun <reified T> safeApiCall(apiCall: () -> T): ApiResult<T> {
+    protected suspend fun <T> safeApiCall(apiCall: suspend () -> T): ApiResult<T> {
         return try {
             ApiResult.Success(apiCall())
         } catch (e: ClientRequestException) {
@@ -75,7 +75,7 @@ abstract class ApiClient {
         }
     }
 
-    private suspend fun <T> handleHttpError(response: HttpResponse): ApiResult<T> {
+    protected suspend fun <T> handleHttpError(response: HttpResponse): ApiResult<T> {
         val statusCode = response.status.value
         val errorResponse = try {
             response.body<ErrorResponse>()
