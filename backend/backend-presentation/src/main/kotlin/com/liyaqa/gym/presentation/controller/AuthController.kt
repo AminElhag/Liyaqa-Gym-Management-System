@@ -135,6 +135,30 @@ class AuthController(
     }
 
     /**
+     * Change password endpoint (requires authentication)
+     * POST /api/v1/auth/change-password
+     */
+    @PostMapping("/change-password")
+    fun changePassword(@Valid @RequestBody request: ChangePasswordRequest): ResponseEntity<MessageResponse> {
+        logger.info("Password change request received")
+
+        return try {
+            val response = authService.changePassword(request)
+            ResponseEntity.ok(response)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Password change failed", e)
+            throw e
+        } catch (e: IllegalStateException) {
+            logger.error("Password change failed - unauthorized", e)
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(MessageResponse(message = e.message ?: "Unauthorized"))
+        } catch (e: Exception) {
+            logger.error("Unexpected error during password change", e)
+            throw e
+        }
+    }
+
+    /**
      * Exception handler for IllegalArgumentException
      */
     @ExceptionHandler(IllegalArgumentException::class)
