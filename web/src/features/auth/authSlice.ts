@@ -7,7 +7,13 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'ADMIN' | 'TRAINER' | 'MEMBER';
+  role: 'ADMIN' | 'TRAINER' | 'MEMBER' | 'STAFF';
+  organizationId?: string;
+  branchId?: string;
+  memberId?: string;
+  staffId?: string;
+  isEmailVerified?: boolean;
+  mustChangePassword?: boolean;
 }
 
 interface AuthState {
@@ -79,6 +85,22 @@ export const fetchCurrentUser = createAsyncThunk<User>(
   'auth/fetchCurrentUser',
   async () => {
     const response = await apiClient.get<User>(API_ENDPOINTS.auth.me);
+    return response;
+  }
+);
+
+interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export const changePassword = createAsyncThunk<{ message: string }, ChangePasswordRequest>(
+  'auth/changePassword',
+  async (data) => {
+    const response = await apiClient.post<{ message: string }>(
+      API_ENDPOINTS.auth.changePassword,
+      data
+    );
     return response;
   }
 );
@@ -168,6 +190,22 @@ const authSlice = createSlice({
         state.token = null;
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
+      })
+      // Change password
+      .addCase(changePassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.isLoading = false;
+        // Clear mustChangePassword flag after successful password change
+        if (state.user) {
+          state.user.mustChangePassword = false;
+        }
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Password change failed';
       });
   },
 });

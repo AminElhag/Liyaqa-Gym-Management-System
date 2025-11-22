@@ -76,7 +76,8 @@ class AuthService(
                 branchId = userDetails.getBranchId(),
                 memberId = userDetails.getMemberId(),
                 staffId = userDetails.getStaffId(),
-                isEmailVerified = userDetails.getUser().isEmailVerified
+                isEmailVerified = userDetails.getUser().isEmailVerified,
+                mustChangePassword = updatedUser.mustChangePassword
             )
         )
     }
@@ -253,5 +254,43 @@ class AuthService(
         // TODO: Validate reset token and get user
         // For now, this is a placeholder
         throw NotImplementedError("Password reset functionality is not yet implemented")
+    }
+
+    /**
+     * Change password for authenticated user
+     */
+    @Transactional
+    fun changePassword(request: ChangePasswordRequest): MessageResponse {
+        val authentication = SecurityContextHolder.getContext().authentication
+            ?: throw IllegalStateException("User not authenticated")
+
+        if (authentication.principal !is GymUserDetails) {
+            throw IllegalStateException("Invalid authentication principal")
+        }
+
+        val userDetails = authentication.principal as GymUserDetails
+        logger.info("Password change attempt for user: ${userDetails.username}")
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.currentPassword, userDetails.password)) {
+            throw IllegalArgumentException("Current password is incorrect")
+        }
+
+        // Validate new password is different
+        if (request.currentPassword == request.newPassword) {
+            throw IllegalArgumentException("New password must be different from current password")
+        }
+
+        // Get current user and update password
+        val user = userRepository.findById(userDetails.getUserId())
+            ?: throw IllegalArgumentException("User not found")
+
+        val newPasswordHash = passwordEncoder.encode(request.newPassword)
+        val updatedUser = user.updatePassword(newPasswordHash)
+        userRepository.save(updatedUser)
+
+        logger.info("Password changed successfully for user: ${userDetails.username}")
+
+        return MessageResponse(message = "Password changed successfully")
     }
 }

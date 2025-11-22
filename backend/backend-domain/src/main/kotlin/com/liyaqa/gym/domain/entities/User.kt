@@ -18,6 +18,7 @@ data class User(
     val staffId: UUID?,   // Reference to Staff entity if role is STAFF/TRAINER
     val isActive: Boolean,
     val isEmailVerified: Boolean,
+    val mustChangePassword: Boolean,  // Force password change on next login
     val lastLoginAt: Instant?,
     val createdAt: Instant,
     val updatedAt: Instant
@@ -49,7 +50,7 @@ data class User(
 
     fun updatePassword(newPasswordHash: String): User {
         require(newPasswordHash.isNotBlank()) { "Password hash cannot be blank" }
-        return copy(passwordHash = newPasswordHash, updatedAt = Instant.now())
+        return copy(passwordHash = newPasswordHash, mustChangePassword = false, updatedAt = Instant.now())
     }
 
     fun recordLogin(): User {
@@ -80,6 +81,7 @@ data class User(
                 staffId = null,
                 isActive = true,
                 isEmailVerified = false,
+                mustChangePassword = false,
                 lastLoginAt = null,
                 createdAt = now,
                 updatedAt = now
@@ -109,6 +111,7 @@ data class User(
                 staffId = staffId,
                 isActive = true,
                 isEmailVerified = false,
+                mustChangePassword = false,
                 lastLoginAt = null,
                 createdAt = now,
                 updatedAt = now

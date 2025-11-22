@@ -25,7 +25,8 @@ data class UserInfo(
     val branchId: UUID?,
     val memberId: UUID?,
     val staffId: UUID?,
-    val isEmailVerified: Boolean
+    val isEmailVerified: Boolean,
+    val mustChangePassword: Boolean
 )
 
 /**
