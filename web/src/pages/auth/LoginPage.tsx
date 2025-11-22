@@ -101,8 +101,7 @@ export const LoginPage: React.FC = () => {
             </Button>
 
             <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Link to="/forgot-password">Forgot password?</Link>
-              <Typography variant="body2" sx={{ mt: 1 }}>
+              <Typography variant="body2">
                 Don't have an account? <Link to="/register">Sign up</Link>
               </Typography>
             </Box>
