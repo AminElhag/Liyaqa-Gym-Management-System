@@ -6,7 +6,7 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:liyaqa_gym}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5434}/${DB_NAME:liyaqa_gym}
     username: ${DB_USERNAME:liyaqa_admin}
     password: ${DB_PASSWORD:liyaqa_password}
     driver-class-name: org.postgresql.Driver
@@ -36,7 +36,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD:liyaqa_redis_password}
       database: ${REDIS_DATABASE:0}
       timeout: 60000
       lettuce:
