@@ -49,7 +49,7 @@ abstract class ApiClient {
         httpClient.delete(path).body<T>()
     }
 
-    protected suspend fun <T> safeApiCall(apiCall: suspend () -> T): ApiResult<T> {
+    suspend fun <T> safeApiCall(apiCall: suspend () -> T): ApiResult<T> {
         return try {
             ApiResult.Success(apiCall())
         } catch (e: ClientRequestException) {
@@ -75,7 +75,7 @@ abstract class ApiClient {
         }
     }
 
-    protected suspend fun <T> handleHttpError(response: HttpResponse): ApiResult<T> {
+    suspend fun <T> handleHttpError(response: HttpResponse): ApiResult<T> {
         val statusCode = response.status.value
         val errorResponse = try {
             response.body<ErrorResponse>()
