@@ -86,8 +86,8 @@ class GenerateInvoiceUseCase(
                 sellerName = defaultSellerName,
                 sellerNameArabic = defaultSellerNameArabic,
                 sellerVatRegistrationNumber = defaultVatNumber.ifBlank { "300000000000003" }, // Default for testing
-                sellerAddress = branch.address ?: "Riyadh, Saudi Arabia",
-                sellerAddressArabic = branch.addressArabic,
+                sellerAddress = branch.address.formattedAddress(),
+                sellerAddressArabic = null, // Arabic address not available in current Address model
                 buyerName = member.name,
                 buyerNameArabic = member.nameArabic,
                 buyerNationalId = member.nationalId,

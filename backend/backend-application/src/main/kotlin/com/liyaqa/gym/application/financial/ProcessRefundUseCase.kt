@@ -8,11 +8,11 @@ import com.liyaqa.gym.domain.entities.Payment
 import com.liyaqa.gym.domain.entities.Refund
 import com.liyaqa.gym.domain.events.EventPublisher
 import com.liyaqa.gym.domain.events.RefundProcessedEvent
+import com.liyaqa.gym.domain.payment.PaymentGatewayFactory
 import com.liyaqa.gym.domain.repositories.InvoiceRepository
 import com.liyaqa.gym.domain.repositories.PaymentRepository
 import com.liyaqa.gym.domain.repositories.RefundRepository
 import com.liyaqa.gym.domain.valueobjects.Money
-import com.liyaqa.infrastructure.payment.gateway.PaymentGatewayFactory
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service

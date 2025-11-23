@@ -8,11 +8,11 @@ import com.liyaqa.gym.domain.entities.MemberStatus
 import com.liyaqa.gym.domain.entities.Payment
 import com.liyaqa.gym.domain.events.EventPublisher
 import com.liyaqa.gym.domain.events.PaymentProcessedEvent
+import com.liyaqa.gym.domain.payment.PaymentGatewayFactory
 import com.liyaqa.gym.domain.repositories.MemberRepository
 import com.liyaqa.gym.domain.repositories.PaymentRepository
 import com.liyaqa.gym.domain.valueobjects.Money
 import com.liyaqa.gym.domain.valueobjects.VAT
-import com.liyaqa.infrastructure.payment.gateway.PaymentGatewayFactory
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
