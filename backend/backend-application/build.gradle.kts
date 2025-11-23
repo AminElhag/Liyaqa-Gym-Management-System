@@ -18,6 +18,11 @@ dependencies {
     implementation("org.springframework:spring-context:6.2.1")
     implementation("org.springframework:spring-tx:6.2.1")
     implementation("org.springframework.security:spring-security-core:6.4.2")
+    implementation("org.springframework.data:spring-data-commons")
+    implementation("org.springframework.retry:spring-retry")
+
+    // Logging
+    implementation("org.slf4j:slf4j-api")
 
     // Validation
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")

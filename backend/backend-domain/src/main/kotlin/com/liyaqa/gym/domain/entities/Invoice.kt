@@ -74,7 +74,7 @@ data class Invoice(
         require(lineItems.isNotEmpty()) { "Invoice must have at least one line item" }
         require(subtotal.isPositive() || subtotal.isZero()) { "Subtotal cannot be negative" }
         require(!totalAmount.isNegative()) { "Total amount cannot be negative" }
-        require(!dueDate?.isBefore(issueDate) ?: false) { "Due date cannot be before issue date" }
+        require(dueDate?.isBefore(issueDate) != true) { "Due date cannot be before issue date" }
 
         // Verify total amount calculation
         val calculatedTotal = subtotal + vat.amount

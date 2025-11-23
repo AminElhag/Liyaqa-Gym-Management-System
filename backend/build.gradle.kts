@@ -15,6 +15,10 @@ java {
 }
 
 dependencies {
+    // Backend modules (Clean Architecture layers)
+    implementation(project(":backend:backend-presentation"))
+    implementation(project(":backend:backend-infrastructure"))
+
     // Spring Boot starters
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
