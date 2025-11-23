@@ -254,7 +254,7 @@ class CancelSubscriptionUseCase(
             .multiply(BigDecimal(remainingDays))
             .divide(BigDecimal(totalDays), 2, RoundingMode.HALF_UP)
 
-        val refund = Money.of(refundAmount, plan.price.currency)
+        val refund = Money.of(refundAmount, plan.price.currency.currencyCode)
         logger.info("Calculated refund amount: $refund for $remainingDays remaining days")
 
         return refund

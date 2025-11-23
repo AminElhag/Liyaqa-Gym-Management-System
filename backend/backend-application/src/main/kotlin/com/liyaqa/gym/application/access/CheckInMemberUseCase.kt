@@ -289,7 +289,8 @@ class CheckInMemberUseCase(
         }
 
         // Check remaining visits for visit-based subscriptions
-        if (subscription.remainingVisits != null && subscription.remainingVisits <= 0) {
+        val remainingVisits = subscription.remainingVisits
+        if (remainingVisits != null && remainingVisits <= 0) {
             throw ValidationException("No remaining visits on your subscription. Please renew.")
         }
     }

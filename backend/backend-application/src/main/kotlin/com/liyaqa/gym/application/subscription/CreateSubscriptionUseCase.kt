@@ -197,7 +197,8 @@ class CreateSubscriptionUseCase(
                 endDate
             }
             plan.isVisitBased() && plan.durationDays != null -> {
-                val endDate = startDate.plusDays(plan.durationDays.toLong())
+                val duration = plan.durationDays
+                val endDate = startDate.plusDays(duration.toLong())
                 logger.debug("Calculated end date: $endDate for visit-based plan with duration")
                 endDate
             }

@@ -421,7 +421,8 @@ class UpgradeSubscriptionUseCase(
         // Recalculate end date if plans have different durations
         if (newPlan.durationDays != null && oldPlan.durationDays != newPlan.durationDays) {
             val now = LocalDate.now()
-            val newEndDate = now.plusDays(newPlan.durationDays.toLong())
+            val duration = newPlan.durationDays
+            val newEndDate = now.plusDays(duration.toLong())
             upgraded = upgraded.copy(endDate = newEndDate)
             logger.debug("Updated end date to: $newEndDate based on new plan duration")
         }

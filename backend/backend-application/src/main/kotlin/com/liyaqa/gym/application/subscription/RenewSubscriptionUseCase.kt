@@ -302,7 +302,8 @@ class RenewSubscriptionUseCase(
                 newEndDate
             }
             plan.isVisitBased() && plan.durationDays != null -> {
-                val newEndDate = startDate.plusDays(plan.durationDays.toLong())
+                val duration = plan.durationDays
+                val newEndDate = startDate.plusDays(duration.toLong())
                 logger.debug("Calculated new end date for visit-based plan: $newEndDate")
                 newEndDate
             }
