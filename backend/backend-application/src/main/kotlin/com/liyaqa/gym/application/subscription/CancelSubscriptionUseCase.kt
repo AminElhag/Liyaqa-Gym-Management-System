@@ -48,6 +48,7 @@ class CancelSubscriptionUseCase(
     private val subscriptionRepository: SubscriptionRepository,
     private val planRepository: MembershipPlanRepository,
     private val paymentRepository: PaymentRepository,
+    private val memberRepository: com.liyaqa.gym.domain.repositories.MemberRepository,
     private val eventPublisher: EventPublisher,
     private val subscriptionMapper: SubscriptionMapper
 ) {
@@ -269,18 +270,32 @@ class CancelSubscriptionUseCase(
         try {
             logger.info("Processing refund of $refundAmount for subscription: ${subscription.id}")
 
-            // Find the original payment(s) for this subscription
-            // For simplicity, create a refund payment record
+            // Load member to get organization and branch IDs
+            val member = memberRepository.findById(subscription.memberId)
+                .getOrElse { error ->
+                    logger.error("Failed to load member: ${error.message}", error)
+                    throw error
+                }
+                .orElseThrow { ResourceNotFoundException("Member not found: ${subscription.memberId}") }
+
+            // Calculate VAT (15% for Saudi Arabia)
+            val vat = com.liyaqa.gym.domain.valueobjects.VAT.calculateSaudiVAT(refundAmount)
+
+            // Generate invoice number
+            val invoiceNumber = com.liyaqa.gym.domain.entities.Payment.generateInvoiceNumber()
+
+            // Create a refund payment record
             val refundPayment = Payment.create(
                 memberId = subscription.memberId,
+                organizationId = member.organizationId,
+                branchId = member.branchId,
                 amount = refundAmount.times(-1), // Negative amount for refund
+                vat = vat.times(-1), // Negative VAT for refund
                 method = com.liyaqa.gym.domain.entities.PaymentMethod.BANK_TRANSFER, // Default refund method
-                description = "Refund for cancelled subscription",
-                metadata = mapOf(
-                    "subscriptionId" to subscription.id.toString(),
-                    "refundType" to "cancellation",
-                    "refundReason" to (subscription.cancellationReason ?: "Subscription cancelled")
-                )
+                invoiceNumber = invoiceNumber,
+                subscriptionId = subscription.id,
+                ptSessionId = null,
+                description = "Refund for cancelled subscription"
             ).copy(
                 status = com.liyaqa.gym.domain.entities.PaymentStatus.COMPLETED
             )

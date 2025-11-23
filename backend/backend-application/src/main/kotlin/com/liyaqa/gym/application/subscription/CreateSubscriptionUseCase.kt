@@ -14,7 +14,7 @@ import com.liyaqa.gym.domain.repositories.MembershipPlanRepository
 import com.liyaqa.gym.domain.repositories.PaymentRepository
 import com.liyaqa.gym.domain.repositories.SubscriptionRepository
 import com.liyaqa.gym.domain.valueobjects.Money
-import com.liyaqa.infrastructure.payment.gateway.PaymentGatewayFactory
+import com.liyaqa.gym.domain.payment.PaymentGatewayFactory
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CachePut
 import org.springframework.stereotype.Service
@@ -249,13 +249,24 @@ class CreateSubscriptionUseCase(
                 throw ValidationException("Payment failed: ${paymentResult.errorMessage ?: "Unknown error"}")
             }
 
+            // Calculate VAT (15% for Saudi Arabia)
+            val vat = com.liyaqa.gym.domain.valueobjects.VAT.calculateSaudiVAT(plan.price)
+
+            // Generate invoice number
+            val invoiceNumber = com.liyaqa.gym.domain.entities.Payment.generateInvoiceNumber()
+
             // Create payment entity
             val payment = Payment.create(
                 memberId = member.id,
+                organizationId = member.organizationId,
+                branchId = member.branchId,
                 amount = plan.price,
+                vat = vat,
                 method = command.paymentMethod,
-                description = "Subscription payment for plan: ${plan.name}",
-                metadata = metadata
+                invoiceNumber = invoiceNumber,
+                subscriptionId = null,
+                ptSessionId = null,
+                description = "Subscription payment for plan: ${plan.name}"
             )
 
             // Mark payment as completed

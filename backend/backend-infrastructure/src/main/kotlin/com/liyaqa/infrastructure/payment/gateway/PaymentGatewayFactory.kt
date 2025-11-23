@@ -1,11 +1,13 @@
 package com.liyaqa.infrastructure.payment.gateway
 
+import com.liyaqa.gym.domain.payment.PaymentGateway
+import com.liyaqa.gym.domain.payment.PaymentGatewayFactory
 import com.liyaqa.infrastructure.payment.config.PaymentGatewayProperties
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
- * Factory for selecting the appropriate payment gateway based on payment method
+ * Infrastructure implementation of PaymentGatewayFactory
  *
  * Features:
  * - Routes payment requests to the correct gateway
@@ -14,14 +16,14 @@ import org.springframework.stereotype.Component
  * - Comprehensive logging
  */
 @Component
-class PaymentGatewayFactory(
+class PaymentGatewayFactoryImpl(
     private val stripeGateway: StripePaymentGateway,
     private val madaGateway: MadaPaymentGateway,
     private val stcPayGateway: STCPayPaymentGateway,
     private val properties: PaymentGatewayProperties
-) {
+) : PaymentGatewayFactory {
 
-    private val logger = LoggerFactory.getLogger(PaymentGatewayFactory::class.java)
+    private val logger = LoggerFactory.getLogger(PaymentGatewayFactoryImpl::class.java)
 
     /**
      * Get the appropriate payment gateway for the given payment method
@@ -30,7 +32,7 @@ class PaymentGatewayFactory(
      * @return PaymentGateway instance that supports the payment method
      * @throws IllegalArgumentException if no gateway supports the payment method
      */
-    fun getGateway(method: String): PaymentGateway {
+    override fun getGateway(method: String): PaymentGateway {
         val normalizedMethod = method.lowercase().trim()
 
         logger.debug("Selecting payment gateway for method: {}", normalizedMethod)
@@ -84,7 +86,7 @@ class PaymentGatewayFactory(
     /**
      * Get all available payment gateways
      */
-    fun getAllGateways(): List<PaymentGateway> {
+    override fun getAllGateways(): List<PaymentGateway> {
         return listOf(stripeGateway, madaGateway, stcPayGateway)
             .filter { isGatewayEnabled(it) }
     }
@@ -92,7 +94,7 @@ class PaymentGatewayFactory(
     /**
      * Get gateway by name
      */
-    fun getGatewayByName(name: String): PaymentGateway? {
+    override fun getGatewayByName(name: String): PaymentGateway? {
         return when (name.lowercase()) {
             "stripe" -> if (properties.stripe.enabled) stripeGateway else null
             "mada" -> if (properties.mada.enabled) madaGateway else null
@@ -104,7 +106,7 @@ class PaymentGatewayFactory(
     /**
      * Check if a payment method is supported by any gateway
      */
-    fun isPaymentMethodSupported(method: String): Boolean {
+    override fun isPaymentMethodSupported(method: String): Boolean {
         return getAllGateways().any { it.supportsPaymentMethod(method) }
     }
 
@@ -160,7 +162,7 @@ class PaymentGatewayFactory(
     /**
      * Get supported payment methods across all enabled gateways
      */
-    fun getSupportedPaymentMethods(): List<String> {
+    override fun getSupportedPaymentMethods(): List<String> {
         val methods = mutableSetOf<String>()
 
         if (properties.stripe.enabled) {

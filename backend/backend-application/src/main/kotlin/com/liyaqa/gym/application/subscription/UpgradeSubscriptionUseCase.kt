@@ -16,7 +16,7 @@ import com.liyaqa.gym.domain.repositories.MembershipPlanRepository
 import com.liyaqa.gym.domain.repositories.PaymentRepository
 import com.liyaqa.gym.domain.repositories.SubscriptionRepository
 import com.liyaqa.gym.domain.valueobjects.Money
-import com.liyaqa.infrastructure.payment.gateway.PaymentGatewayFactory
+import com.liyaqa.gym.domain.payment.PaymentGatewayFactory
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CachePut
 import org.springframework.stereotype.Service
@@ -51,6 +51,7 @@ class UpgradeSubscriptionUseCase(
     private val subscriptionRepository: SubscriptionRepository,
     private val planRepository: MembershipPlanRepository,
     private val paymentRepository: PaymentRepository,
+    private val memberRepository: com.liyaqa.gym.domain.repositories.MemberRepository,
     private val paymentGatewayFactory: PaymentGatewayFactory,
     private val eventPublisher: EventPublisher,
     private val subscriptionMapper: SubscriptionMapper
@@ -314,6 +315,14 @@ class UpgradeSubscriptionUseCase(
         logger.info("Processing upgrade payment of $prorationAmount via ${command.paymentMethod}")
 
         return try {
+            // Load member to get organization and branch IDs
+            val member = memberRepository.findById(subscription.memberId)
+                .getOrElse { error ->
+                    logger.error("Failed to load member: ${error.message}", error)
+                    throw error
+                }
+                .orElseThrow { ResourceNotFoundException("Member not found: ${subscription.memberId}") }
+
             // Get the appropriate payment gateway
             val gateway = paymentGatewayFactory.getGateway(command.paymentMethod.name.lowercase())
 
@@ -340,13 +349,24 @@ class UpgradeSubscriptionUseCase(
                 throw ValidationException("Payment failed: ${paymentResult.errorMessage ?: "Unknown error"}")
             }
 
+            // Calculate VAT (15% for Saudi Arabia)
+            val vat = com.liyaqa.gym.domain.valueobjects.VAT.calculateSaudiVAT(prorationAmount)
+
+            // Generate invoice number
+            val invoiceNumber = com.liyaqa.gym.domain.entities.Payment.generateInvoiceNumber()
+
             // Create payment entity
             val payment = Payment.create(
                 memberId = subscription.memberId,
+                organizationId = member.organizationId,
+                branchId = member.branchId,
                 amount = prorationAmount,
+                vat = vat,
                 method = command.paymentMethod,
-                description = "Subscription upgrade to plan: ${newPlan.name}",
-                metadata = metadata
+                invoiceNumber = invoiceNumber,
+                subscriptionId = subscription.id,
+                ptSessionId = null,
+                description = "Subscription upgrade to plan: ${newPlan.name}"
             )
 
             // Mark payment as completed

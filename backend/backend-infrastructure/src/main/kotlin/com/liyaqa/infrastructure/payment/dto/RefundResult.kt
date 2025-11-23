@@ -1,85 +1,11 @@
 package com.liyaqa.infrastructure.payment.dto
 
-import java.math.BigDecimal
-import java.time.Instant
+import com.liyaqa.gym.domain.payment.RefundResult as DomainRefundResult
+import com.liyaqa.gym.domain.payment.RefundStatus as DomainRefundStatus
 
 /**
- * Result of a refund operation
+ * Type aliases for backward compatibility.
+ * All code should use the domain types.
  */
-data class RefundResult(
-    val success: Boolean,
-    val refundId: String?,
-    val originalPaymentId: String,
-    val amount: BigDecimal,
-    val currency: String,
-    val status: RefundStatus,
-    val errorCode: String? = null,
-    val errorMessage: String? = null,
-    val processedAt: Instant = Instant.now(),
-    val metadata: Map<String, String> = emptyMap()
-) {
-    companion object {
-        fun success(
-            refundId: String,
-            originalPaymentId: String,
-            amount: BigDecimal,
-            currency: String,
-            metadata: Map<String, String> = emptyMap()
-        ): RefundResult {
-            return RefundResult(
-                success = true,
-                refundId = refundId,
-                originalPaymentId = originalPaymentId,
-                amount = amount,
-                currency = currency,
-                status = RefundStatus.COMPLETED,
-                metadata = metadata
-            )
-        }
-
-        fun failure(
-            originalPaymentId: String,
-            amount: BigDecimal,
-            currency: String,
-            errorCode: String,
-            errorMessage: String
-        ): RefundResult {
-            return RefundResult(
-                success = false,
-                refundId = null,
-                originalPaymentId = originalPaymentId,
-                amount = amount,
-                currency = currency,
-                status = RefundStatus.FAILED,
-                errorCode = errorCode,
-                errorMessage = errorMessage
-            )
-        }
-
-        fun pending(
-            refundId: String,
-            originalPaymentId: String,
-            amount: BigDecimal,
-            currency: String,
-            metadata: Map<String, String> = emptyMap()
-        ): RefundResult {
-            return RefundResult(
-                success = false,
-                refundId = refundId,
-                originalPaymentId = originalPaymentId,
-                amount = amount,
-                currency = currency,
-                status = RefundStatus.PENDING,
-                metadata = metadata
-            )
-        }
-    }
-}
-
-enum class RefundStatus {
-    PENDING,
-    PROCESSING,
-    COMPLETED,
-    FAILED,
-    CANCELLED
-}
+typealias RefundResult = DomainRefundResult
+typealias RefundStatus = DomainRefundStatus
