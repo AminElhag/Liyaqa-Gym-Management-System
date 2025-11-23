@@ -5,7 +5,6 @@ plugins {
     kotlin("multiplatform") version "1.9.24" apply false
     kotlin("android") version "1.9.24" apply false
     kotlin("kapt") version "1.9.24" apply false
-    kotlin("plugin.compose") version "1.9.24" apply false
     id("org.springframework.boot") version "3.5.6" apply false
     id("io.spring.dependency-management") version "1.1.6" apply false
     id("com.android.application") version "8.7.3" apply false
