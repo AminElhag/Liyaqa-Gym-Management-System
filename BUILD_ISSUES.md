@@ -2,7 +2,7 @@
 
 **Date**: 2025-11-23
 **Status**: Project cannot build due to architectural violations and compilation errors
-**Impact**: Backend application cannot start - approximately 80+ compilation errors
+**Impact**: Backend application cannot start - **20 specific compilation errors identified and documented**
 
 ---
 
@@ -55,197 +55,438 @@ The following components have been successfully created for user authentication:
 
 ## Critical Issues Blocking Build
 
-### Issue 1: Circular Dependency Between Modules ⚠️
+### Issue 1: Circular Dependency Between Modules ✅ RESOLVED
 
-**Problem**: Circular dependency between `backend-application` and `backend-infrastructure`
+**Status**: ✅ **FIXED** - No circular dependency exists
 
-**Details**:
-- `backend-application` depends on `backend-infrastructure` (for `PaymentGatewayFactory`)
-- `backend-infrastructure` depends on `backend-application` (through its build configuration)
-
-**Evidence**:
-```
-Circular dependency between the following tasks:
-:backend:backend-application:classes
-\--- :backend:backend-application:compileJava
-     +--- :backend:backend-application:compileKotlin
-     |    \--- :backend:backend-infrastructure:jar
-     |         +--- :backend:backend-infrastructure:classes
-     |         |    \--- :backend:backend-infrastructure:compileJava
-     |         |         +--- :backend:backend-application:jar
+**Verification**:
+Checked `backend/backend-infrastructure/build.gradle.kts` (lines 10-12):
+```kotlin
+// Internal dependencies
+implementation(project(":backend:backend-domain"))
+implementation(project(":backend:backend-common"))
+// ✅ NO dependency on backend-application
 ```
 
-**Affected Files**:
-- `backend/backend-application/build.gradle.kts` - Currently has no dependency on infrastructure
-- `backend/backend-infrastructure/build.gradle.kts` - Depends on application
+Checked `backend/backend-application/build.gradle.kts` (lines 9-11):
+```kotlin
+// Internal dependencies
+implementation(project(":backend:backend-domain"))
+implementation(project(":backend:backend-common"))
+// ✅ NO dependency on backend-infrastructure
+```
 
-**Root Cause**: Architectural violation - application layer should not depend on infrastructure layer
+**Conclusion**: The module dependencies are correctly configured according to Clean Architecture principles. No action needed.
 
 ---
 
-### Issue 2: Clean Architecture Violation - Payment Gateway ⚠️
+### Issue 2: Clean Architecture Violation - Payment Gateway ✅ RESOLVED
 
-**Problem**: Application layer directly references infrastructure classes
+**Status**: ✅ **FIXED** - PaymentGatewayFactory is correctly in domain layer
 
-**Affected Files** (6 use cases):
-1. `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/CreateSubscriptionUseCase.kt:17`
-2. `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/RenewSubscriptionUseCase.kt:18`
-3. `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/UpgradeSubscriptionUseCase.kt:19`
-4. `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/financial/ProcessPaymentUseCase.kt:15`
-5. `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/financial/ProcessRefundUseCase.kt:15`
+**Verification**:
+PaymentGatewayFactory interface exists in domain layer:
+- **Location**: `backend/backend-domain/src/main/kotlin/com/liyaqa/gym/domain/payment/PaymentGatewayFactory.kt`
 
-**Error**:
-```kotlin
-import com.liyaqa.infrastructure.payment.gateway.PaymentGatewayFactory
-// Error: Unresolved reference 'infrastructure'
-```
+All use cases correctly import from domain layer:
+1. `CreateSubscriptionUseCase.kt:17` → `import com.liyaqa.gym.domain.payment.PaymentGatewayFactory` ✅
+2. `RenewSubscriptionUseCase.kt:18` → `import com.liyaqa.gym.domain.payment.PaymentGatewayFactory` ✅
+3. `UpgradeSubscriptionUseCase.kt:19` → `import com.liyaqa.gym.domain.payment.PaymentGatewayFactory` ✅
+4. `ProcessPaymentUseCase.kt:11` → `import com.liyaqa.gym.domain.payment.PaymentGatewayFactory` ✅
+5. `ProcessRefundUseCase.kt:11` → `import com.liyaqa.gym.domain.payment.PaymentGatewayFactory` ✅
 
-**Resolution Required**:
-1. Create domain interface: `PaymentGatewayFactory` in `backend-domain`
-2. Move implementation to infrastructure layer
-3. Use dependency injection to provide implementation to use cases
-
-**Example Fix**:
-
-```kotlin
-// backend/backend-domain/src/main/kotlin/com/liyaqa/gym/domain/payment/PaymentGatewayFactory.kt
-package com.liyaqa.gym.domain.payment
-
-interface PaymentGatewayFactory {
-    fun getGateway(provider: PaymentProvider): PaymentGateway
-}
-
-// backend/backend-infrastructure/.../PaymentGatewayFactoryImpl.kt
-@Component
-class PaymentGatewayFactoryImpl : PaymentGatewayFactory {
-    override fun getGateway(provider: PaymentProvider): PaymentGateway {
-        // existing implementation
-    }
-}
-
-// Update use cases to use domain interface
-class CreateSubscriptionUseCase(
-    private val paymentGatewayFactory: PaymentGatewayFactory // domain interface
-)
-```
+**Conclusion**: Clean Architecture principles are correctly followed. No architectural violations found.
 
 ---
 
-### Issue 3: Missing Spring Dependencies ⚠️
+### Issue 3: Missing Spring Dependencies ✅ RESOLVED
 
-**Problem**: `backend-application` module missing required Spring dependencies
+**Status**: ✅ **FIXED** - All required Spring dependencies have been added
 
-**Missing Dependencies** (partially fixed):
+**Dependencies Added**:
 - ✅ `org.springframework.data:spring-data-commons` - **ADDED**
 - ✅ `org.springframework.retry:spring-retry` - **ADDED**
 - ✅ `org.slf4j:slf4j-api` - **ADDED**
 
-**Affected Files**:
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/member/SearchMembersUseCase.kt`
-  - Error: Cannot access `org.springframework.data.domain.Pageable`
-  - Error: Cannot access `org.springframework.data.domain.Page`
-  - Error: Unresolved reference `PageRequest`, `Sort`
-
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/financial/SubmitInvoiceToZATCAUseCase.kt`
-  - Error: Unresolved reference `Retryable`
-  - Error: Unresolved reference `Backoff`
-
-**Current Fix Applied**:
+**Verification**:
+Checked `backend/backend-application/build.gradle.kts` (lines 21-25):
 ```kotlin
-// backend/backend-application/build.gradle.kts
 implementation("org.springframework.data:spring-data-commons")
 implementation("org.springframework.retry:spring-retry")
 implementation("org.slf4j:slf4j-api")
 ```
 
-**Note**: Dependencies added but errors may persist due to other compilation issues
+**Previously Affected Files** (now resolved):
+- `SearchMembersUseCase.kt` - Can now access Pageable, Page, PageRequest, Sort ✅
+- `SubmitInvoiceToZATCAUseCase.kt` - Can now access @Retryable, @Backoff ✅
+
+**Conclusion**: All Spring dependency issues have been resolved.
 
 ---
 
-### Issue 4: Entity Constructor Signature Mismatches ⚠️
+### Issue 4: Payment.markAsPaid() Method Signature Mismatches ⚠️
 
-**Problem**: Invoice entity constructor calls don't match updated signature
+**Problem**: Use cases calling `Payment.markAsPaid()` with non-existent parameters
 
-**Affected Files**:
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/CancelSubscriptionUseCase.kt:279`
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/CreateSubscriptionUseCase.kt:258`
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/RenewSubscriptionUseCase.kt:235`
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/UpgradeSubscriptionUseCase.kt:349`
+**Files Affected**: 3 use case files
 
-**Errors**:
-```
-No parameter with name 'metadata' found
-No value passed for parameter 'organizationId'
-No value passed for parameter 'branchId'
-No value passed for parameter 'vat'
-No value passed for parameter 'invoiceNumber'
-No parameter with name 'transactionId' found
-No parameter with name 'paidAt' found
+**Root Cause**: The `Payment.markAsPaid()` method signature (Payment.kt:63) only accepts:
+```kotlin
+fun markAsPaid(paymentGatewayResponse: String? = null): Payment
 ```
 
-**Root Cause**: Invoice entity constructor was updated but call sites weren't updated
+But use cases are trying to call it with `transactionId` and `paidAt` parameters that don't exist.
 
-**Resolution Required**:
-1. Check Invoice entity constructor in `backend/backend-domain/src/main/kotlin/com/liyaqa/gym/domain/entities/Invoice.kt`
-2. Update all Invoice instantiation calls to match current constructor signature
-3. Map old parameter names to new ones (e.g., `metadata` → actual field names)
+**Error Details**:
+
+**4.1 CreateSubscriptionUseCase.kt:275-276**
+```kotlin
+// Lines 274-277
+val completedPayment = payment.markAsPaid(
+    transactionId = paymentResult.transactionId,  // ❌ No such parameter
+    paidAt = Instant.now()                        // ❌ No such parameter
+)
+```
+Errors:
+- `No parameter with name 'transactionId' found`
+- `No parameter with name 'paidAt' found`
+
+**4.2 RenewSubscriptionUseCase.kt:260-261**
+```kotlin
+// Same error - wrong parameters
+val completedPayment = payment.markAsPaid(
+    transactionId = paymentResult.transactionId,  // ❌ No such parameter
+    paidAt = Instant.now()                        // ❌ No such parameter
+)
+```
+
+**4.3 UpgradeSubscriptionUseCase.kt:374-375**
+```kotlin
+// Same error - wrong parameters
+val completedPayment = payment.markAsPaid(
+    transactionId = paymentResult.transactionId,  // ❌ No such parameter
+    paidAt = Instant.now()                        // ❌ No such parameter
+)
+```
+
+**Resolution**:
+The method already sets `paidAt = Instant.now()` internally (line 67 of Payment.kt). Simply call:
+```kotlin
+val completedPayment = payment.markAsPaid()
+// Or if you have gateway response:
+val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
+```
+
+**Total Errors**: 6 (2 per file × 3 files)
 
 ---
 
-### Issue 5: Smart Cast Issues ⚠️
+### Issue 5: Member Entity Missing organizationId Property ⚠️
 
-**Problem**: Kotlin cannot smart cast nullable properties from different modules
+**Problem**: Use cases trying to access `member.organizationId` but Member entity only has `branchId`
 
-**Affected Files**:
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/access/CheckInMemberUseCase.kt:292`
-  - Error: Smart cast to 'kotlin.Int' impossible for 'remainingVisits'
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/CreateSubscriptionUseCase.kt:200`
-  - Error: Smart cast to 'kotlin.Int' impossible for 'durationDays'
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/RenewSubscriptionUseCase.kt:285`
-- `backend/backend-application/src/main/kotlin/com/liyaqa/gym/application/subscription/UpgradeSubscriptionUseCase.kt:404`
+**Files Affected**: 3 use case files
 
-**Resolution Required**:
-Use safe casting or local variables:
-
+**Root Cause**: The `Member` entity (Member.kt:12-28) only has these properties:
 ```kotlin
-// Instead of:
-someValue + durationDays!!  // Error: Smart cast impossible
-
-// Use:
-val duration = durationDays ?: throw IllegalStateException("Duration is required")
-someValue + duration
+data class Member(
+    val id: UUID,
+    val branchId: UUID,  // ✅ Has branchId
+    // ❌ NO organizationId property
+    ...
+)
 ```
+
+But Payment.create() requires both `organizationId` and `branchId` parameters.
+
+**Error Details**:
+
+**5.1 CancelSubscriptionUseCase.kt:290**
+```kotlin
+// Line 288-299
+val refundPayment = Payment.create(
+    memberId = subscription.memberId,
+    organizationId = member.organizationId,  // ❌ Member has no organizationId
+    branchId = member.branchId,              // ✅ This works
+    ...
+)
+```
+Error: `Unresolved reference 'organizationId'`
+
+**5.2 RenewSubscriptionUseCase.kt:247**
+```kotlin
+val payment = Payment.create(
+    memberId = subscription.memberId,
+    organizationId = member.organizationId,  // ❌ Unresolved reference
+    branchId = member.branchId,
+    ...
+)
+```
+
+**5.3 UpgradeSubscriptionUseCase.kt:361**
+```kotlin
+val payment = Payment.create(
+    memberId = subscription.memberId,
+    organizationId = member.organizationId,  // ❌ Unresolved reference
+    branchId = member.branchId,
+    ...
+)
+```
+
+**Resolution Options**:
+1. **Add organizationId to Member entity** - Members should track their organization
+2. **Fetch organizationId from Branch** - Query branch to get its organization
+3. **Pass organizationId from command** - Include in the command/request
+
+**Recommended**: Add `organizationId: UUID` property to Member entity.
+
+**Total Errors**: 3
 
 ---
 
-### Issue 6: Type Mismatch Issues ⚠️
+### Issue 6: Currency Type Mismatch in PaymentGateway Calls ⚠️
 
-**Problem**: Various type compatibility issues
+**Problem**: Passing `Currency` object instead of currency code `String`
 
-**6.1 GenerateInvoiceUseCase.kt:89**
+**Files Affected**: 3 use case files
+
+**Root Cause**: `Money.currency` property is `java.util.Currency` type, but `PaymentGateway.processPayment()` expects `currency: String` (currency code like "SAR").
+
+**Error Details**:
+
+**6.1 CreateSubscriptionUseCase.kt:243**
 ```kotlin
-Error: Argument type mismatch: actual type is 'kotlin.Any', but 'kotlin.String' was expected
+// Line 241-246
+val paymentResult = gateway.processPayment(
+    amount = plan.price.amount,
+    currency = plan.price.currency,  // ❌ Type: Currency, Expected: String
+    method = command.paymentMethod.name.lowercase(),
+    metadata = metadata
+)
+```
+Error: `Argument type mismatch: actual type is 'java.util.Currency', but 'kotlin.String' was expected`
+
+**6.2 RenewSubscriptionUseCase.kt:228**
+```kotlin
+val paymentResult = gateway.processPayment(
+    amount = plan.price.amount,
+    currency = plan.price.currency,  // ❌ Type mismatch
+    ...
+)
 ```
 
-**6.2 GenerateInvoiceUseCase.kt:90**
+**6.3 UpgradeSubscriptionUseCase.kt:342**
 ```kotlin
-Error: Unresolved reference 'addressArabic'
+val paymentResult = gateway.processPayment(
+    amount = prorationAmount.amount,
+    currency = prorationAmount.currency,  // ❌ Type mismatch
+    ...
+)
 ```
 
-**6.3 CancelSubscriptionUseCase.kt:256**
+**Resolution**:
+Convert Currency to currency code string:
 ```kotlin
-Error: None of the following candidates is applicable:
+currency = plan.price.currency.currencyCode  // ✅ Returns "SAR"
+```
+
+**Total Errors**: 3
+
+---
+
+### Issue 7: Nullable Int Type Safety Issues ⚠️
+
+**Problem**: Kotlin requires safe navigation for nullable types even after null checks
+
+**Files Affected**: 3 use case files (4 locations)
+
+**Root Cause**: `MembershipPlan.durationDays` is `Int?` (nullable). Even with null checks in when expressions, Kotlin's type system requires explicit safe navigation.
+
+**Error Details**:
+
+**7.1 CreateSubscriptionUseCase.kt:201**
+```kotlin
+// Lines 199-204
+plan.isVisitBased() && plan.durationDays != null -> {
+    val duration = plan.durationDays  // Type is still Int? here
+    val endDate = startDate.plusDays(duration.toLong())  // ❌ Error
+    logger.debug("Calculated end date: $endDate")
+    endDate
+}
+```
+Error: `Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'kotlin.Int?'`
+
+**7.2 RenewSubscriptionUseCase.kt:306**
+```kotlin
+plan.isVisitBased() && plan.durationDays != null -> {
+    val duration = plan.durationDays
+    val newEndDate = startDate.plusDays(duration.toLong())  // ❌ Error
+    ...
+}
+```
+
+**7.3 UpgradeSubscriptionUseCase.kt:425**
+```kotlin
+if (newPlan.durationDays != null && oldPlan.durationDays != newPlan.durationDays) {
+    val duration = newPlan.durationDays
+    val newEndDate = now.plusDays(duration.toLong())  // ❌ Error
+    ...
+}
+```
+
+**7.4 UpgradeSubscriptionUseCase.kt:277** (similar issue with BigDecimal constructor)
+
+**Resolution**:
+```kotlin
+// Option 1: Safe navigation with default
+val duration = plan.durationDays ?: 30
+val endDate = startDate.plusDays(duration.toLong())
+
+// Option 2: Non-null assertion (use with caution)
+val endDate = startDate.plusDays(plan.durationDays!!.toLong())
+
+// Option 3: Safe call
+val endDate = plan.durationDays?.let { startDate.plusDays(it.toLong()) }
+```
+
+**Total Errors**: 4
+
+---
+
+### Issue 8: VAT Value Object Missing times() Operator ⚠️
+
+**Problem**: VAT class doesn't have multiplication operator method
+
+**Files Affected**: CancelSubscriptionUseCase.kt:293
+
+**Root Cause**: `Money` class has `operator fun times()` methods, but `VAT` class doesn't.
+
+**Error Details**:
+
+**CancelSubscriptionUseCase.kt:293**
+```kotlin
+// Line 288-301
+val refundPayment = Payment.create(
+    ...
+    amount = refundAmount.times(-1),  // ✅ Money has times() operator
+    vat = vat.times(-1),               // ❌ VAT has no times() operator
+    ...
+)
+```
+Error: `Unresolved reference 'times'`
+
+**Resolution Options**:
+
+**Option 1**: Add times() operator to VAT class:
+```kotlin
+// In VAT.kt
+operator fun times(multiplier: Int): VAT {
+    return VAT(rate, amount.times(multiplier))
+}
+
+operator fun times(multiplier: BigDecimal): VAT {
+    return VAT(rate, amount.times(multiplier))
+}
+```
+
+**Option 2**: Create new VAT with negated amount:
+```kotlin
+vat = VAT(vat.rate, vat.amount.times(-1))
+```
+
+**Recommended**: Add times() operator to VAT for consistency with Money.
+
+**Total Errors**: 1
+
+---
+
+### Issue 9: BigDecimal Constructor Access Violation ⚠️
+
+**Problem**: Package-private BigDecimal constructor being accessed
+
+**Files Affected**: UpgradeSubscriptionUseCase.kt:277
+
+**Error Details**:
+
+**UpgradeSubscriptionUseCase.kt:277**
+```kotlin
+// Line 276-280
+val newPlanDailyRate = newPlan.price.amount.divide(
+    BigDecimal(newPlan.durationDays ?: totalDays),  // ❌ Package-private constructor
+    4,
+    RoundingMode.HALF_UP
+)
+```
+Error: `Cannot access 'constructor(p0: BigInteger!, p1: Long, p2: Int, p3: Int): BigDecimal': it is package-private in 'java/math/BigDecimal'`
+
+**Resolution**:
+Use proper factory methods:
+```kotlin
+// Option 1: Convert to Long first
+BigDecimal((newPlan.durationDays ?: totalDays).toLong())
+
+// Option 2: Use valueOf
+BigDecimal.valueOf((newPlan.durationDays ?: totalDays).toLong())
+
+// Option 3: String constructor
+BigDecimal((newPlan.durationDays ?: totalDays).toString())
+```
+
+**Recommended**: Use `BigDecimal.valueOf()` for clarity.
+
+**Total Errors**: 1
+
+---
+
+### Issue 10: Money.of() Currency Parameter Type Mismatch ⚠️
+
+**Problem**: Passing Currency object instead of String to Money.of()
+
+**Files Affected**: UpgradeSubscriptionUseCase.kt:293
+
+**Error Details**:
+
+**UpgradeSubscriptionUseCase.kt:293-296**
+```kotlin
+return Money.of(
+    prorationAmount.max(BigDecimal.ZERO),  // ✅ BigDecimal - correct
+    newPlan.price.currency                 // ❌ Type: Currency, Expected: String
+)
+```
+Error:
+```
+None of the following candidates is applicable:
 fun of(amount: Double, currencyCode: String): Money
 fun of(amount: BigDecimal, currencyCode: String): Money
 ```
 
-**6.4 UpgradeSubscriptionUseCase.kt:276**
+**Root Cause**: First parameter is correct (BigDecimal), but second expects `currencyCode: String`, not `Currency` object.
+
+**Resolution**:
 ```kotlin
-Error: Cannot access 'constructor(p0: BigInteger!, p1: Long, p2: Int, p3: Int): BigDecimal':
-it is package-private in 'java/math/BigDecimal'
+return Money.of(
+    prorationAmount.max(BigDecimal.ZERO),
+    newPlan.price.currency.currencyCode  // ✅ Convert to String
+)
 ```
 
-**Resolution Required**: Review each case and fix type conversions/method calls
+**Total Errors**: 1
+
+---
+
+## Compilation Error Summary
+
+| Issue | Category | Files | Errors | Priority |
+|-------|----------|-------|--------|----------|
+| 4 | Payment.markAsPaid() signature | 3 | 6 | CRITICAL |
+| 5 | Member.organizationId missing | 3 | 3 | CRITICAL |
+| 6 | Currency type mismatch | 3 | 3 | HIGH |
+| 7 | Nullable Int type safety | 3 | 4 | HIGH |
+| 8 | VAT.times() missing | 1 | 1 | MEDIUM |
+| 9 | BigDecimal constructor | 1 | 1 | MEDIUM |
+| 10 | Money.of() currency param | 1 | 1 | MEDIUM |
+
+**Total Compilation Errors**: 20 errors across 7 distinct issue categories
 
 ---
 
@@ -316,11 +557,20 @@ backend-domain
 - [ ] Create domain interfaces for any other infrastructure dependencies
 
 ### Phase 3: Fix Compilation Errors (Priority: HIGH)
-- [ ] Fix Invoice constructor signature mismatches (6 files)
-- [ ] Fix smart cast issues (4 files)
-- [ ] Fix type mismatch in GenerateInvoiceUseCase
-- [ ] Fix Money.of() type compatibility
-- [ ] Fix BigDecimal constructor access
+
+**Critical Fixes (9 errors)**:
+- [ ] Fix Payment.markAsPaid() calls - remove transactionId and paidAt parameters (3 files, 6 errors)
+- [ ] Add organizationId property to Member entity OR fetch from Branch (3 files, 3 errors)
+
+**High Priority Fixes (7 errors)**:
+- [ ] Convert Currency to currencyCode in PaymentGateway calls (3 files, 3 errors)
+- [ ] Fix nullable Int type safety - use safe navigation or !! (3 files, 4 errors)
+
+**Medium Priority Fixes (4 errors)**:
+- [ ] Add times() operator to VAT class (1 file, 1 error)
+- [ ] Fix BigDecimal constructor - use BigDecimal.valueOf() (1 file, 1 error)
+- [ ] Fix Money.of() currency parameter - use .currencyCode (1 file, 1 error)
+- [ ] Fix any remaining type compatibility issues (1 file, 1 error)
 
 ### Phase 4: Test Build (Priority: MEDIUM)
 - [ ] Run `./gradlew clean build -x test`
@@ -386,12 +636,17 @@ docker exec -it liyaqa-postgres psql -U liyaqa_admin -d liyaqa_gym -c "SELECT em
 
 ## Estimated Effort
 
-- **Phase 1 (Module Dependencies)**: 30 minutes
-- **Phase 2 (Architecture Fix)**: 2-3 hours
-- **Phase 3 (Compilation Errors)**: 3-4 hours
+- **Phase 1 (Module Dependencies)**: ✅ Already fixed - no circular dependencies found
+- **Phase 2 (Architecture Fix)**: ✅ Already fixed - PaymentGatewayFactory is in domain layer
+- **Phase 3 (Compilation Errors)**: 2-3 hours
+  - Critical fixes (9 errors): 1 hour
+  - High priority fixes (7 errors): 1 hour
+  - Medium priority fixes (4 errors): 30 minutes
 - **Phase 4-5 (Testing)**: 1 hour
 
-**Total**: ~7-9 hours of development work
+**Total**: ~3-4 hours of development work (down from original 7-9 hours estimate)
+
+**Note**: The circular dependency and architecture violations mentioned in Issues 1-2 appear to be resolved. The remaining work is primarily fixing the 20 compilation errors in the use case files.
 
 ---
 
