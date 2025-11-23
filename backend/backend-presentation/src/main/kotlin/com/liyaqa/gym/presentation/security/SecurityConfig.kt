@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -40,21 +41,11 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            // Disable CSRF for stateless API
-            .csrf { it.disable() }
-
-            // Configure CORS
+            .csrf(AbstractHttpConfigurer<*, *>::disable)
             .cors { it.configurationSource(corsConfigurationSource) }
-
-            // Configure session management (stateless)
-            .sessionManagement { session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            }
-
-            // Configure authorization rules
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    // Public endpoints - authentication
                     .requestMatchers(
                         "/api/v1/auth/login",
                         "/api/v1/auth/register",
@@ -62,8 +53,6 @@ class SecurityConfig(
                         "/api/v1/auth/forgot-password",
                         "/api/v1/auth/reset-password"
                     ).permitAll()
-
-                    // Public endpoints - health check and documentation
                     .requestMatchers(
                         "/actuator/health",
                         "/actuator/info",
@@ -72,37 +61,19 @@ class SecurityConfig(
                         "/swagger-ui.html",
                         "/error"
                     ).permitAll()
-
-                    // Public endpoints - webhook (should be secured with signature verification)
                     .requestMatchers(HttpMethod.POST, "/api/v1/webhooks/**").permitAll()
-
-                    // Protected endpoints - require authentication
                     .requestMatchers("/api/v1/**").authenticated()
-
-                    // All other requests require authentication
                     .anyRequest().authenticated()
             }
-
-            // Configure authentication provider
             .authenticationProvider(authenticationProvider())
-
-            // Add JWT filter before UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-
-            // Configure exception handling
             .exceptionHandling { exceptions ->
                 exceptions
                     .authenticationEntryPoint { _, response, authException ->
-                        response.sendError(
-                            401,
-                            "Unauthorized: ${authException.message}"
-                        )
+                        response.sendError(401, "Unauthorized: ${authException.message}")
                     }
                     .accessDeniedHandler { _, response, accessDeniedException ->
-                        response.sendError(
-                            403,
-                            "Forbidden: ${accessDeniedException.message}"
-                        )
+                        response.sendError(403, "Forbidden: ${accessDeniedException.message}")
                     }
             }
 

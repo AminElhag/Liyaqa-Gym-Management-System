@@ -16,7 +16,12 @@ import org.springframework.kafka.annotation.EnableKafka
  * - Payment processing
  * - Attendance tracking
  */
-@SpringBootApplication
+@SpringBootApplication(
+    exclude = [
+        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration::class,
+        org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration::class
+    ]
+)
 @EnableCaching
 @EnableJpaAuditing
 @EnableKafka

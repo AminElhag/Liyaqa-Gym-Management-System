@@ -36,9 +36,9 @@ spring:
       on-profile: dev
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/liyaqa_dev
-    username: liyaqa_user
-    password: liyaqa_pass
+    url: jdbc:postgresql://localhost:5434/liyaqa_gym
+    username: liyaqa_admin
+    password: liyaqa_password
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -59,6 +59,7 @@ spring:
     redis:
       host: localhost
       port: 6379
+      password: liyaqa_redis_password
       database: 0
       timeout: 2000ms
       lettuce:
@@ -89,6 +90,13 @@ logging:
     com.liyaqa: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
 
 ---
 # Test Profile
