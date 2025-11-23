@@ -6,13 +6,20 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
   user: {
     id: string;
     email: string;
-    firstName: string;
-    lastName: string;
-    role: 'ADMIN' | 'TRAINER' | 'MEMBER';
+    role: string;
+    organizationId: string;
+    branchId: string | null;
+    memberId: string | null;
+    staffId: string | null;
+    isEmailVerified: boolean;
+    mustChangePassword: boolean;
   };
 }
 
