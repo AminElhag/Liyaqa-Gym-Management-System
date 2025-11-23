@@ -225,7 +225,7 @@ class RenewSubscriptionUseCase(
             // Process payment through gateway
             val paymentResult = gateway.processPayment(
                 amount = plan.price.amount,
-                currency = plan.price.currency,
+                currency = plan.price.currency.currencyCode,
                 method = command.paymentMethod.name.lowercase(),
                 metadata = metadata
             )
@@ -256,10 +256,7 @@ class RenewSubscriptionUseCase(
             )
 
             // Mark payment as completed
-            val completedPayment = payment.markAsPaid(
-                transactionId = paymentResult.transactionId,
-                paidAt = Instant.now()
-            )
+            val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
 
             // Persist payment
             val savedPayment = paymentRepository.save(completedPayment)
@@ -302,7 +299,7 @@ class RenewSubscriptionUseCase(
                 newEndDate
             }
             plan.isVisitBased() && plan.durationDays != null -> {
-                val duration = plan.durationDays
+                val duration = plan.durationDays!!
                 val newEndDate = startDate.plusDays(duration.toLong())
                 logger.debug("Calculated new end date for visit-based plan: $newEndDate")
                 newEndDate

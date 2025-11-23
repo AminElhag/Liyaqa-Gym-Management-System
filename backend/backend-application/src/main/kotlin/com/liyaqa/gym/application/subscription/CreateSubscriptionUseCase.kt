@@ -197,7 +197,7 @@ class CreateSubscriptionUseCase(
                 endDate
             }
             plan.isVisitBased() && plan.durationDays != null -> {
-                val duration = plan.durationDays
+                val duration = plan.durationDays!!
                 val endDate = startDate.plusDays(duration.toLong())
                 logger.debug("Calculated end date: $endDate for visit-based plan with duration")
                 endDate
@@ -240,7 +240,7 @@ class CreateSubscriptionUseCase(
             // Process payment through gateway
             val paymentResult = gateway.processPayment(
                 amount = plan.price.amount,
-                currency = plan.price.currency,
+                currency = plan.price.currency.currencyCode,
                 method = command.paymentMethod.name.lowercase(),
                 metadata = metadata
             )
@@ -271,10 +271,7 @@ class CreateSubscriptionUseCase(
             )
 
             // Mark payment as completed
-            val completedPayment = payment.markAsPaid(
-                transactionId = paymentResult.transactionId,
-                paidAt = Instant.now()
-            )
+            val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
 
             // Persist payment
             val savedPayment = paymentRepository.save(completedPayment)

@@ -274,7 +274,7 @@ class UpgradeSubscriptionUseCase(
 
         // Calculate cost for remaining period on new plan
         val newPlanDailyRate = newPlan.price.amount.divide(
-            BigDecimal(newPlan.durationDays ?: totalDays),
+            BigDecimal.valueOf((newPlan.durationDays ?: totalDays).toLong()),
             4,
             RoundingMode.HALF_UP
         )
@@ -292,7 +292,7 @@ class UpgradeSubscriptionUseCase(
 
         return Money.of(
             prorationAmount.max(BigDecimal.ZERO), // Never charge negative (no downgrades)
-            newPlan.price.currency
+            newPlan.price.currency.currencyCode
         )
     }
 
@@ -339,7 +339,7 @@ class UpgradeSubscriptionUseCase(
             // Process payment through gateway
             val paymentResult = gateway.processPayment(
                 amount = prorationAmount.amount,
-                currency = prorationAmount.currency,
+                currency = prorationAmount.currency.currencyCode,
                 method = command.paymentMethod.name.lowercase(),
                 metadata = metadata
             )
@@ -370,10 +370,7 @@ class UpgradeSubscriptionUseCase(
             )
 
             // Mark payment as completed
-            val completedPayment = payment.markAsPaid(
-                transactionId = paymentResult.transactionId,
-                paidAt = Instant.now()
-            )
+            val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
 
             // Persist payment
             val savedPayment = paymentRepository.save(completedPayment)
@@ -421,7 +418,7 @@ class UpgradeSubscriptionUseCase(
         // Recalculate end date if plans have different durations
         if (newPlan.durationDays != null && oldPlan.durationDays != newPlan.durationDays) {
             val now = LocalDate.now()
-            val duration = newPlan.durationDays
+            val duration = newPlan.durationDays!!
             val newEndDate = now.plusDays(duration.toLong())
             upgraded = upgraded.copy(endDate = newEndDate)
             logger.debug("Updated end date to: $newEndDate based on new plan duration")

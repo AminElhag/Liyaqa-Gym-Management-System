@@ -23,6 +23,20 @@ data class VAT(
     val ratePercentage: BigDecimal
         get() = rate.multiply(BigDecimal(100)).setScale(2, RoundingMode.HALF_UP)
 
+    /**
+     * Multiply VAT amount by an integer multiplier
+     */
+    operator fun times(multiplier: Int): VAT {
+        return VAT(rate, amount.times(multiplier))
+    }
+
+    /**
+     * Multiply VAT amount by a BigDecimal multiplier
+     */
+    operator fun times(multiplier: BigDecimal): VAT {
+        return VAT(rate, amount.times(multiplier))
+    }
+
     companion object {
         /**
          * Saudi Arabia standard VAT rate (15%)
