@@ -11,6 +11,7 @@ import java.util.UUID
  */
 data class Member(
     val id: UUID,
+    val organizationId: UUID,
     val branchId: UUID,
     val name: String,
     val nameArabic: String?,
@@ -60,6 +61,7 @@ data class Member(
 
     companion object {
         fun create(
+            organizationId: UUID,
             branchId: UUID,
             name: String,
             nameArabic: String?,
@@ -71,6 +73,7 @@ data class Member(
             val now = Instant.now()
             return Member(
                 id = UUID.randomUUID(),
+                organizationId = organizationId,
                 branchId = branchId,
                 name = name,
                 nameArabic = nameArabic,
