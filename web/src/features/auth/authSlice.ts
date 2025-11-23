@@ -46,8 +46,10 @@ interface RegisterData {
 
 interface AuthResponse {
   user: User;
-  token: string;
-  refreshToken?: string;
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
 }
 
 export const login = createAsyncThunk<AuthResponse, LoginCredentials>(
@@ -111,12 +113,15 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; token: string }>
+      action: PayloadAction<{ user: User; accessToken: string; refreshToken?: string }>
     ) => {
       state.user = action.payload.user;
-      state.token = action.payload.token;
+      state.token = action.payload.accessToken;
       state.isAuthenticated = true;
-      localStorage.setItem('access_token', action.payload.token);
+      localStorage.setItem('access_token', action.payload.accessToken);
+      if (action.payload.refreshToken) {
+        localStorage.setItem('refresh_token', action.payload.refreshToken);
+      }
     },
     clearError: (state) => {
       state.error = null;
@@ -136,11 +141,9 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user;
-        state.token = action.payload.token;
-        localStorage.setItem('access_token', action.payload.token);
-        if (action.payload.refreshToken) {
-          localStorage.setItem('refresh_token', action.payload.refreshToken);
-        }
+        state.token = action.payload.accessToken;
+        localStorage.setItem('access_token', action.payload.accessToken);
+        localStorage.setItem('refresh_token', action.payload.refreshToken);
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
@@ -155,11 +158,9 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user;
-        state.token = action.payload.token;
-        localStorage.setItem('access_token', action.payload.token);
-        if (action.payload.refreshToken) {
-          localStorage.setItem('refresh_token', action.payload.refreshToken);
-        }
+        state.token = action.payload.accessToken;
+        localStorage.setItem('access_token', action.payload.accessToken);
+        localStorage.setItem('refresh_token', action.payload.refreshToken);
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;

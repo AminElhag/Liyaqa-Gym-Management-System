@@ -43,8 +43,18 @@ export default function LoginPage() {
       setLoading(true);
       setError(null);
       const response = await authApi.login(data);
-      dispatch(setCredentials(response));
-      navigate('/dashboard');
+      dispatch(setCredentials({
+        user: response.user,
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      }));
+
+      // Check if user must change password
+      if (response.user.mustChangePassword) {
+        navigate('/change-password');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
