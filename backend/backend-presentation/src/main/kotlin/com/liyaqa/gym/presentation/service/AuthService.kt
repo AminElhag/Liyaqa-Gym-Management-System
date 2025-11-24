@@ -16,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
 
@@ -37,7 +36,6 @@ class AuthService(
     /**
      * Authenticate user and generate tokens
      */
-    @Transactional
     fun login(request: LoginRequest): AuthResponse {
         logger.info("Login attempt for email: ${request.email}")
 
@@ -85,7 +83,6 @@ class AuthService(
     /**
      * Register new member with user account
      */
-    @Transactional
     fun register(request: RegisterRequest): RegisterResponse {
         logger.info("Registration attempt for email: ${request.email}")
 
@@ -148,6 +145,10 @@ class AuthService(
         )
 
         val savedMember = memberRepository.save(member)
+            .getOrElse { error ->
+                logger.error("Failed to save member: ${error.message}", error)
+                throw error
+            }
 
         // Create User entity
         val user = User.createMemberUser(
@@ -173,7 +174,6 @@ class AuthService(
     /**
      * Refresh access token using refresh token
      */
-    @Transactional(readOnly = true)
     fun refreshToken(request: RefreshTokenRequest): RefreshTokenResponse {
         logger.debug("Token refresh attempt")
 
@@ -219,7 +219,6 @@ class AuthService(
      * Initiate forgot password flow
      * TODO: Implement email sending with reset token
      */
-    @Transactional
     fun forgotPassword(request: ForgotPasswordRequest): MessageResponse {
         logger.info("Forgot password request for email: ${request.email}")
 
@@ -250,7 +249,6 @@ class AuthService(
      * Reset password using reset token
      * TODO: Implement token validation
      */
-    @Transactional
     fun resetPassword(request: ResetPasswordRequest): MessageResponse {
         logger.info("Password reset attempt with token")
 
@@ -262,7 +260,6 @@ class AuthService(
     /**
      * Change password for authenticated user
      */
-    @Transactional
     fun changePassword(request: ChangePasswordRequest): MessageResponse {
         val authentication = SecurityContextHolder.getContext().authentication
             ?: throw IllegalStateException("User not authenticated")
