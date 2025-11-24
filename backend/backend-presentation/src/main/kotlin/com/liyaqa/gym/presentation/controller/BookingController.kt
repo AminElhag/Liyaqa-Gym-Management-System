@@ -110,7 +110,7 @@ class BookingController(
             classRepository.findById(it.classId).getOrThrow().orElse(null)
         }
 
-        val response = bookingMapper.toDTO(result).toBookingResponse(
+        val response = result.toBookingResponse(
             className = gymClass?.name,
             classTime = schedule?.startDate
         )
@@ -212,7 +212,7 @@ class BookingController(
 
         val command = CancelBookingCommand(
             bookingId = id,
-            reason = request.reason
+            reason = request.reason ?: "No reason provided"
         )
 
         val result = cancelBookingUseCase.execute(command).getOrThrow()
@@ -385,9 +385,13 @@ class BookingController(
     ): ResponseEntity<ApiResponse<CheckInResponse>> {
         logger.info("Checking in booking ID: $id")
 
+        // TODO: Get user ID from security context
+        val markedByUserId = UUID.randomUUID() // Placeholder
+
         val command = MarkAttendanceCommand(
             bookingId = id,
-            attended = true
+            attended = true,
+            markedByUserId = markedByUserId
         )
 
         val result = markAttendanceUseCase.execute(command).getOrThrow()
@@ -567,7 +571,7 @@ class BookingController(
                 val booking = bookClassUseCase.execute(command).getOrThrow()
 
                 successfulBookings.add(
-                    bookingMapper.toDTO(booking).toBookingSummaryResponse(
+                    booking.toBookingSummaryResponse(
                         className = gymClass?.name,
                         classTime = schedule?.startDate
                     )

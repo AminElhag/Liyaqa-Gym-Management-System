@@ -260,16 +260,13 @@ class ClassScheduleController(
             roomId = request.roomId,
             startTime = request.startTime,
             endTime = request.endTime,
-            dayOfWeek = DayOfWeek.valueOf(request.dayOfWeek),
-            startDate = request.startDate,
-            endDate = request.endDate,
-            recurrencePattern = request.recurrencePattern?.let { RecurrencePattern.valueOf(it) }
+            dayOfWeek = DayOfWeek.valueOf(request.dayOfWeek)
         )
 
         val result = createClassScheduleUseCase.execute(command).getOrThrow()
         val gymClass = classRepository.findById(result.classId).getOrThrow().orElse(null)
 
-        val response = scheduleMapper.toDTO(result).toScheduleResponse(
+        val response = result.toScheduleResponse(
             className = gymClass?.name,
             capacity = gymClass?.capacity
         )

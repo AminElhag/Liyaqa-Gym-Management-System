@@ -96,9 +96,12 @@ class AuthService(
         }
 
         // Validate branch exists
-        val branch = branchRepository.findById(branchId)
-            ?: throw IllegalArgumentException("Branch not found")
+        val branchOptional = branchRepository.findById(branchId).getOrThrow()
+        if (!branchOptional.isPresent) {
+            throw IllegalArgumentException("Branch not found")
+        }
 
+        val branch = branchOptional.get()
         if (!branch.isActive) {
             throw IllegalArgumentException("Branch is not active")
         }

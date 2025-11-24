@@ -159,7 +159,7 @@ class MembershipPlanController(
             PlanType.DURATION -> MembershipPlan.createDurationBased(
                 branchId = request.branchId,
                 name = request.name,
-                price = Money(request.price, request.currency),
+                price = Money(request.price, java.util.Currency.getInstance(request.currency)),
                 durationDays = request.durationDays
                     ?: throw IllegalArgumentException("Duration is required for DURATION plans"),
                 features = request.features
@@ -172,7 +172,7 @@ class MembershipPlanController(
             PlanType.VISIT_BASED -> MembershipPlan.createVisitBased(
                 branchId = request.branchId,
                 name = request.name,
-                price = Money(request.price, request.currency),
+                price = Money(request.price, java.util.Currency.getInstance(request.currency)),
                 visitCount = request.visitCount
                     ?: throw IllegalArgumentException("Visit count is required for VISIT_BASED plans"),
                 features = request.features
@@ -185,7 +185,7 @@ class MembershipPlanController(
             PlanType.TIME_RESTRICTED -> MembershipPlan.createTimeRestricted(
                 branchId = request.branchId,
                 name = request.name,
-                price = Money(request.price, request.currency),
+                price = Money(request.price, java.util.Currency.getInstance(request.currency)),
                 durationDays = request.durationDays
                     ?: throw IllegalArgumentException("Duration is required for TIME_RESTRICTED plans"),
                 allowedTimeSlots = request.allowedTimeSlots
@@ -268,7 +268,7 @@ class MembershipPlanController(
         request.maxActiveSubscriptions?.let { plan = plan.copy(maxActiveSubscriptions = it) }
 
         if (request.price != null && request.currency != null) {
-            plan = plan.updatePrice(Money(request.price, request.currency))
+            plan = plan.updatePrice(Money(request.price, java.util.Currency.getInstance(request.currency)))
         }
 
         request.isActive?.let {
@@ -345,7 +345,7 @@ class MembershipPlanController(
             description = this.description,
             type = this.type.name,
             price = this.price.amount,
-            currency = this.price.currency,
+            currency = this.price.currency.currencyCode,
             durationDays = this.durationDays,
             visitCount = this.visitCount,
             allowedTimeSlots = this.allowedTimeSlots,
@@ -364,7 +364,7 @@ class MembershipPlanController(
             name = this.name,
             type = this.type.name,
             price = this.price.amount,
-            currency = this.price.currency,
+            currency = this.price.currency.currencyCode,
             durationDays = this.durationDays,
             visitCount = this.visitCount,
             isActive = this.isActive
