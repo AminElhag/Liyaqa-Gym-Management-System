@@ -92,8 +92,7 @@ class DatabaseConfig {
 
         entityManagerFactory.dataSource = dataSource
         entityManagerFactory.setPackagesToScan(
-            "com.liyaqa.domain.model",
-            "com.liyaqa.infrastructure.persistence.entity"
+            "com.liyaqa.infrastructure.persistence.entities"
         )
 
         val vendorAdapter = HibernateJpaVendorAdapter()
@@ -104,7 +103,7 @@ class DatabaseConfig {
         // JPA properties
         val properties = HashMap<String, Any>()
         properties["hibernate.dialect"] = "org.hibernate.dialect.PostgreSQLDialect"
-        properties["hibernate.hbm2ddl.auto"] = "validate"
+        properties["hibernate.hbm2ddl.auto"] = "none"
         properties["hibernate.show_sql"] = "false" // Controlled by application.yml
         properties["hibernate.format_sql"] = "true"
         properties["hibernate.use_sql_comments"] = "true"

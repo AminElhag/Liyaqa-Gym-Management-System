@@ -23,7 +23,7 @@ CREATE INDEX IF NOT EXISTS idx_membership_plans_price ON membership_plans(organi
 CREATE INDEX IF NOT EXISTS idx_subscriptions_member_status ON subscriptions(member_id, status) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_subscriptions_org_status ON subscriptions(organization_id, status) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_subscriptions_active_period ON subscriptions(member_id, start_date, end_date) WHERE NOT is_deleted AND status = 'ACTIVE';
-CREATE INDEX IF NOT EXISTS idx_subscriptions_expiring ON subscriptions(organization_id, end_date) WHERE NOT is_deleted AND status = 'ACTIVE' AND end_date > CURRENT_DATE;
+CREATE INDEX IF NOT EXISTS idx_subscriptions_expiring ON subscriptions(organization_id, end_date) WHERE NOT is_deleted AND status = 'ACTIVE';
 CREATE INDEX IF NOT EXISTS idx_subscriptions_auto_renew ON subscriptions(organization_id, next_billing_date) WHERE NOT is_deleted AND auto_renew = TRUE;
 
 -- Classes: Composite indexes for class management
@@ -34,7 +34,7 @@ CREATE INDEX IF NOT EXISTS idx_classes_org_type ON classes(organization_id, clas
 CREATE INDEX IF NOT EXISTS idx_class_schedules_class_date_status ON class_schedules(class_id, scheduled_date, status) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_class_schedules_org_date ON class_schedules(organization_id, scheduled_date) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_class_schedules_instructor_date ON class_schedules(instructor_id, scheduled_date) WHERE NOT is_deleted AND instructor_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_class_schedules_upcoming ON class_schedules(organization_id, scheduled_date, start_time) WHERE NOT is_deleted AND status = 'SCHEDULED' AND scheduled_date >= CURRENT_DATE;
+CREATE INDEX IF NOT EXISTS idx_class_schedules_upcoming ON class_schedules(organization_id, scheduled_date, start_time) WHERE NOT is_deleted AND status = 'SCHEDULED';
 CREATE INDEX IF NOT EXISTS idx_class_schedules_available ON class_schedules(organization_id, scheduled_date) WHERE NOT is_deleted AND status = 'SCHEDULED' AND current_bookings < max_capacity;
 
 -- Bookings: Composite indexes for booking queries
@@ -51,7 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_trainers_branch_status ON trainers(branch_id, sta
 CREATE INDEX IF NOT EXISTS idx_pt_sessions_trainer_date_status ON pt_sessions(trainer_id, scheduled_date, status) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_pt_sessions_member_date ON pt_sessions(member_id, scheduled_date DESC) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_pt_sessions_org_date ON pt_sessions(organization_id, scheduled_date) WHERE NOT is_deleted;
-CREATE INDEX IF NOT EXISTS idx_pt_sessions_upcoming ON pt_sessions(trainer_id, scheduled_date, start_time) WHERE NOT is_deleted AND status = 'SCHEDULED' AND scheduled_date >= CURRENT_DATE;
+CREATE INDEX IF NOT EXISTS idx_pt_sessions_upcoming ON pt_sessions(trainer_id, scheduled_date, start_time) WHERE NOT is_deleted AND status = 'SCHEDULED';
 
 -- Payments: Composite indexes for payment queries
 CREATE INDEX IF NOT EXISTS idx_payments_member_date ON payments(member_id, payment_date DESC) WHERE NOT is_deleted;
@@ -64,12 +64,12 @@ CREATE INDEX IF NOT EXISTS idx_payments_pending ON payments(organization_id, pay
 CREATE INDEX IF NOT EXISTS idx_invoices_member_status ON invoices(member_id, status) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_invoices_org_status ON invoices(organization_id, status) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_invoices_org_due_date ON invoices(organization_id, due_date) WHERE NOT is_deleted AND status IN ('ISSUED', 'OVERDUE');
-CREATE INDEX IF NOT EXISTS idx_invoices_overdue ON invoices(organization_id, due_date) WHERE NOT is_deleted AND status = 'ISSUED' AND due_date < CURRENT_DATE;
+CREATE INDEX IF NOT EXISTS idx_invoices_overdue ON invoices(organization_id, due_date) WHERE NOT is_deleted AND status = 'ISSUED';
 
 -- Access Logs: Composite indexes for access tracking
 CREATE INDEX IF NOT EXISTS idx_access_logs_member_entry_time ON access_logs(member_id, entry_time DESC) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_access_logs_branch_entry_time ON access_logs(branch_id, entry_time DESC) WHERE NOT is_deleted;
-CREATE INDEX IF NOT EXISTS idx_access_logs_org_date ON access_logs(organization_id, entry_time::date) WHERE NOT is_deleted;
+CREATE INDEX IF NOT EXISTS idx_access_logs_org_date ON access_logs(organization_id, CAST(entry_time AS date)) WHERE NOT is_deleted;
 CREATE INDEX IF NOT EXISTS idx_access_logs_status_date ON access_logs(branch_id, status, entry_time) WHERE NOT is_deleted;
 
 -- Equipment: Composite indexes for equipment management
