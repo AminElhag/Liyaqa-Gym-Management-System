@@ -383,7 +383,7 @@ class PaymentController(
             ptSessionId = this.ptSessionId,
             description = this.description,
             paymentGatewayId = this.paymentGatewayId,
-            refundedAmount = this.refundedAmount?.amount,
+            refundedAmount = this.refundAmount?.amount,
             paidAt = this.paidAt,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt

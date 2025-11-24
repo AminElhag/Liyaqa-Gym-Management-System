@@ -7,6 +7,7 @@ import com.liyaqa.gym.domain.events.PaymentProcessedEvent
 import com.liyaqa.gym.domain.payment.PaymentGatewayFactory
 import com.liyaqa.gym.domain.repositories.PaymentRepository
 import com.liyaqa.gym.domain.valueobjects.Money
+import com.liyaqa.infrastructure.payment.gateway.PaymentGatewayFactoryImpl
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -28,6 +29,7 @@ import java.util.*
 @RequestMapping("/api/v1/webhooks/payments")
 class PaymentWebhookController(
     private val gatewayFactory: PaymentGatewayFactory,
+    private val gatewayFactoryImpl: PaymentGatewayFactoryImpl,
     private val paymentRepository: PaymentRepository,
     private val eventPublisher: EventPublisher,
     private val objectMapper: ObjectMapper
@@ -283,7 +285,7 @@ class PaymentWebhookController(
      */
     @GetMapping("/health")
     fun health(): ResponseEntity<Map<String, Any>> {
-        val stats = gatewayFactory.getGatewayStats()
+        val stats = gatewayFactoryImpl.getGatewayStats()
         return ResponseEntity.ok(mapOf(
             "status" to "UP",
             "timestamp" to Instant.now().toString(),
