@@ -42,7 +42,8 @@ class MemberController(
     private val updateMemberProfileUseCase: UpdateMemberProfileUseCase,
     private val searchMembersUseCase: SearchMembersUseCase,
     private val suspendMemberUseCase: SuspendMemberUseCase,
-    private val deleteMemberUseCase: DeleteMemberUseCase
+    private val deleteMemberUseCase: DeleteMemberUseCase,
+    private val branchRepository: com.liyaqa.gym.domain.repositories.BranchRepository
 ) {
 
     private val logger = LoggerFactory.getLogger(MemberController::class.java)
@@ -77,7 +78,13 @@ class MemberController(
     ): ResponseEntity<ApiResponse<MemberResponse>> {
         logger.info("Registering new member with email: ${request.email}")
 
+        // Get branch to retrieve organizationId
+        val branch = branchRepository.findById(request.branchId)
+            .getOrThrow()
+            .orElseThrow { ResourceNotFoundException("Branch not found: ${request.branchId}") }
+
         val command = RegisterMemberCommand(
+            organizationId = branch.organizationId,
             branchId = request.branchId,
             name = request.name,
             nameArabic = request.nameArabic,
@@ -264,11 +271,9 @@ class MemberController(
 
         val searchQuery = SearchMembersQuery(
             branchId = branchId,
-            searchQuery = query,
+            name = query,
             status = status?.let { MemberStatus.valueOf(it) },
             gender = gender?.let { Gender.valueOf(it) },
-            minAge = minAge,
-            maxAge = maxAge,
             page = page,
             size = size,
             sortBy = sortBy,
