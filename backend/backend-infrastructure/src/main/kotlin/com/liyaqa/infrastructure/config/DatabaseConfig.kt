@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -45,8 +46,14 @@ class DatabaseConfig {
     @Primary
     @Bean(name = ["dataSource"])
     @ConfigurationProperties(prefix = "spring.datasource.hikari")
-    fun dataSource(): DataSource {
+    fun dataSource(dataSourceProperties: DataSourceProperties): DataSource {
         val hikariConfig = HikariConfig()
+
+        // Set required JDBC connection properties from DataSourceProperties
+        hikariConfig.jdbcUrl = dataSourceProperties.url
+        hikariConfig.username = dataSourceProperties.username
+        hikariConfig.password = dataSourceProperties.password
+        hikariConfig.driverClassName = dataSourceProperties.driverClassName
 
         // Connection pool settings - configured via application.yml
         // These values will be overridden by the @ConfigurationProperties binding
