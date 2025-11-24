@@ -88,10 +88,10 @@ class StripePaymentGateway(
                 "currency" to currency.lowercase(),
                 "payment_method" to method,
                 "confirm" to "true",
-                "description" to (metadata["description"] ?: "Gym membership payment"),
-                "metadata[customer_id]" to (metadata["customerId"] ?: ""),
-                "metadata[member_id]" to (metadata["memberId"] ?: ""),
-                "metadata[invoice_number]" to (metadata["invoiceNumber"] ?: "")
+                "description" to (metadata["description"]?.toString() ?: "Gym membership payment"),
+                "metadata[customer_id]" to (metadata["customerId"]?.toString() ?: ""),
+                "metadata[member_id]" to (metadata["memberId"]?.toString() ?: ""),
+                "metadata[invoice_number]" to (metadata["invoiceNumber"]?.toString() ?: "")
             ))
 
             val request = HttpRequest.newBuilder()

@@ -131,13 +131,13 @@ class AuthService(
 
         // Create Member entity
         val member = Member.create(
+            organizationId = branch.organizationId,
             branchId = branchId,
             name = request.name,
             nameArabic = request.nameArabic,
             contactInfo = ContactInfo(
                 email = request.email,
-                phone = request.phone,
-                alternatePhone = null
+                phone = request.phone
             ),
             nationalId = request.nationalId,
             gender = gender,

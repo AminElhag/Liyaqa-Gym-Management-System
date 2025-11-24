@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.liyaqa.gym.domain.entities.PaymentMethod
 import com.liyaqa.gym.domain.events.EventPublisher
 import com.liyaqa.gym.domain.events.PaymentProcessedEvent
+import com.liyaqa.gym.domain.payment.PaymentGatewayFactory
 import com.liyaqa.gym.domain.repositories.PaymentRepository
 import com.liyaqa.gym.domain.valueobjects.Money
-import com.liyaqa.infrastructure.payment.gateway.PaymentGatewayFactory
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

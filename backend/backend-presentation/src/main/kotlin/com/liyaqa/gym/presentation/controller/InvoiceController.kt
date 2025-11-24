@@ -234,14 +234,13 @@ class InvoiceController(
 
         val invoice = invoiceOptional.get()
 
-        if (invoice.qrCode == null) {
-            throw ResourceNotFoundException("QR code not yet generated for invoice: $id")
-        }
+        val qrCode = invoice.qrCode
+            ?: throw ResourceNotFoundException("QR code not yet generated for invoice: $id")
 
         val response = QRCodeResponse(
             invoiceId = invoice.id,
             invoiceNumber = invoice.invoiceNumber,
-            qrCode = invoice.qrCode,
+            qrCode = qrCode,
             format = "BASE64"
         )
 

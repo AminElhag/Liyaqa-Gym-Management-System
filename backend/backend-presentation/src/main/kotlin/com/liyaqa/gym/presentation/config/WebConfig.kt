@@ -28,13 +28,12 @@ class WebConfig : WebMvcConfigurer {
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
-        val configuration = CorsConfiguration().apply {
-            allowedOriginPatterns = allowedOrigins.split(",").map { it.trim() }
-            allowedMethods = this@WebConfig.allowedMethods.split(",").map { it.trim() }
-            allowedHeaders = this@WebConfig.allowedHeaders.split(",").map { it.trim() }
-            allowCredentials = this@WebConfig.allowCredentials
-            maxAge = 3600L
-        }
+        val configuration = CorsConfiguration()
+        configuration.allowedOriginPatterns = allowedOrigins.split(",").map { it.trim() }
+        configuration.allowedMethods = this@WebConfig.allowedMethods.split(",").map { it.trim() }
+        configuration.allowedHeaders = this@WebConfig.allowedHeaders.split(",").map { it.trim() }
+        configuration.allowCredentials = this@WebConfig.allowCredentials
+        configuration.maxAge = 3600L
 
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
