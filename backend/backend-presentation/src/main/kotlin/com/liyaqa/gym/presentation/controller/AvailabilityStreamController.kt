@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse as SwaggerApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
@@ -264,6 +265,3 @@ class AvailabilityStreamController(
         emitters.clear()
     }
 }
-
-// Import for @PreDestroy
-import jakarta.annotation.PreDestroy

@@ -141,7 +141,7 @@ class EventPublisherImpl(
             is SubscriptionRenewedEvent -> "subscription-${event.subscriptionId}"
             is ClassBookedEvent -> "booking-${event.bookingId}"
             is ClassCancelledEvent -> "booking-${event.bookingId}"
-            is WaitlistJoinedEvent -> "waitlist-${event.waitlistId}"
+            is WaitlistJoinedEvent -> "waitlist-${event.scheduleId}"
             is PTSessionScheduledEvent -> "pt-${event.sessionId}"
             is PaymentProcessedEvent -> "payment-${event.paymentId}"
             is InvoiceGeneratedEvent -> "invoice-${event.invoiceId}"

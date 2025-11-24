@@ -236,7 +236,7 @@ class PaymentController(
             currency = refund.amount.currency.currencyCode,
             creditNoteNumber = refund.creditNoteNumber,
             status = refund.status.name,
-            gatewayRefundId = refund.gatewayRefundId,
+            gatewayRefundId = refund.paymentGatewayRefundId,
             processedAt = refund.processedAt,
             message = "Refund processed successfully"
         )

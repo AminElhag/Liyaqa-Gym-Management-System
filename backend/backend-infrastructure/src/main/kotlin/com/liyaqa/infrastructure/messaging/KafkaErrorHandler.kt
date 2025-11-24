@@ -2,6 +2,7 @@ package com.liyaqa.infrastructure.messaging
 
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.listener.CommonErrorHandler
 import org.springframework.kafka.listener.MessageListenerContainer
@@ -23,7 +24,7 @@ class KafkaErrorHandler : CommonErrorHandler {
 
     override fun handleBatch(
         thrownException: Exception,
-        data: org.springframework.kafka.listener.ConsumerRecords<*, *>,
+        data: ConsumerRecords<*, *>,
         consumer: Consumer<*, *>,
         container: MessageListenerContainer,
         invokeListener: Runnable
@@ -36,7 +37,7 @@ class KafkaErrorHandler : CommonErrorHandler {
         )
 
         // Log each record in the batch for debugging
-        data.forEach { record ->
+        for (record in data) {
             logger.error(
                 "Failed record - Topic: {}, Partition: {}, Offset: {}, Key: {}",
                 record.topic(),
@@ -57,7 +58,7 @@ class KafkaErrorHandler : CommonErrorHandler {
         record: ConsumerRecord<*, *>,
         consumer: Consumer<*, *>,
         container: MessageListenerContainer
-    ) {
+    ): Boolean {
         logger.error(
             "Error processing record - Topic: {}, Partition: {}, Offset: {}, Key: {}, Error: {}",
             record.topic(),
@@ -77,6 +78,10 @@ class KafkaErrorHandler : CommonErrorHandler {
 
         // 3. Alert if error rate exceeds threshold
         checkErrorRateAndAlert(record.topic())
+
+        // Return true to indicate error was handled (continue processing)
+        // Return false to stop the container
+        return true
     }
 
     private fun sendToDeadLetterQueue(record: ConsumerRecord<*, *>, error: Exception) {

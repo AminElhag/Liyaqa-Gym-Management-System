@@ -18,6 +18,7 @@ class MemberEntityMapper {
     fun toEntity(domain: Member): MemberJpaEntity {
         return MemberJpaEntity(
             id = domain.id,
+            organizationId = domain.organizationId,
             branchId = domain.branchId,
             name = domain.name,
             nameArabic = domain.nameArabic,
@@ -41,6 +42,7 @@ class MemberEntityMapper {
     fun toDomain(entity: MemberJpaEntity): Member {
         return Member(
             id = entity.id,
+            organizationId = entity.organizationId,
             branchId = entity.branchId,
             name = entity.name,
             nameArabic = entity.nameArabic,
