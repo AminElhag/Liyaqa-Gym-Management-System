@@ -218,8 +218,11 @@ class CheckInMemberUseCase(
             }
         } else {
             // Use member ID directly
-            val member = getMember(command.memberId!!)
-            val subscription = getActiveSubscription(command.memberId)
+            val memberId = command.memberId
+                ?: throw ValidationException("memberId is required when qrCode is not provided")
+
+            val member = getMember(memberId)
+            val subscription = getActiveSubscription(memberId)
             Triple(member, subscription, false)
         }
     }

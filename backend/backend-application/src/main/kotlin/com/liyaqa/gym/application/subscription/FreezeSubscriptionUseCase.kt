@@ -215,12 +215,17 @@ class FreezeSubscriptionUseCase(
      */
     private fun publishSubscriptionFrozenEvent(subscription: Subscription, newEndDate: LocalDate?) {
         try {
+            val freezeStartDate = subscription.pausedAt
+                ?: throw IllegalStateException("pausedAt should be set after calling pause()")
+            val freezeEndDate = subscription.pausedUntil
+                ?: throw IllegalStateException("pausedUntil should be set after calling pause()")
+
             val event = SubscriptionFrozenEvent(
                 subscriptionId = subscription.id,
                 memberId = subscription.memberId,
-                freezeStartDate = subscription.pausedAt!!,
-                freezeEndDate = subscription.pausedUntil!!,
-                newEndDate = newEndDate ?: subscription.pausedUntil!!
+                freezeStartDate = freezeStartDate,
+                freezeEndDate = freezeEndDate,
+                newEndDate = newEndDate ?: freezeEndDate
             )
 
             eventPublisher.publish(event)

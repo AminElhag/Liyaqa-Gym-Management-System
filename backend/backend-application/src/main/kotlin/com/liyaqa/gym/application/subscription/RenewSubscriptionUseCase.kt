@@ -294,15 +294,18 @@ class RenewSubscriptionUseCase(
 
         return when {
             plan.isDurationBased() || plan.isTimeRestricted() -> {
-                val newEndDate = startDate.plusDays(plan.durationDays!!.toLong())
-                logger.debug("Calculated new end date: $newEndDate (${plan.durationDays} days from $startDate)")
+                val duration = plan.durationDays
+                    ?: throw IllegalStateException("Duration-based or time-restricted plans must have durationDays set")
+                val newEndDate = startDate.plusDays(duration.toLong())
+                logger.debug("Calculated new end date: $newEndDate ($duration days from $startDate)")
                 newEndDate
             }
             plan.isVisitBased() && plan.durationDays != null -> {
-                val duration = plan.durationDays!!
-                val newEndDate = startDate.plusDays(duration.toLong())
-                logger.debug("Calculated new end date for visit-based plan: $newEndDate")
-                newEndDate
+                plan.durationDays?.let { duration ->
+                    val newEndDate = startDate.plusDays(duration.toLong())
+                    logger.debug("Calculated new end date for visit-based plan: $newEndDate")
+                    newEndDate
+                }
             }
             else -> {
                 logger.debug("No end date calculated for visit-based plan without duration")

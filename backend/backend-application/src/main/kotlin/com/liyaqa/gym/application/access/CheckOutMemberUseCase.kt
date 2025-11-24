@@ -74,12 +74,15 @@ class CheckOutMemberUseCase(
             logger.info("Check-out successful for member: ${accessLog.memberId}, duration: ${duration.toMinutes()} minutes")
 
             // 7. Return confirmation
+            val checkOutTime = updatedAccessLog.checkOutTime
+                ?: throw IllegalStateException("Check-out time should be set after calling checkOut()")
+
             CheckOutConfirmation(
                 accessLogId = updatedAccessLog.id,
                 memberId = accessLog.memberId,
                 branchId = accessLog.branchId,
                 checkInTime = accessLog.checkInTime,
-                checkOutTime = updatedAccessLog.checkOutTime!!,
+                checkOutTime = checkOutTime,
                 duration = duration,
                 message = "Thank you for visiting! You stayed for ${duration.toMinutes()} minutes."
             )
@@ -117,9 +120,14 @@ class CheckOutMemberUseCase(
 
         } else {
             // Find by member ID and branch ID
+            val memberId = command.memberId
+                ?: throw ValidationException("memberId is required when accessLogId is not provided")
+            val branchId = command.branchId
+                ?: throw ValidationException("branchId is required when accessLogId is not provided")
+
             val activeAccessOpt = accessLogRepository.findActiveByMemberAndBranch(
-                command.memberId!!,
-                command.branchId!!
+                memberId,
+                branchId
             ).getOrElse { error ->
                 logger.error("Failed to query active access: ${error.message}", error)
                 throw error
