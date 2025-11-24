@@ -7,6 +7,7 @@ import java.util.UUID
 /**
  * Command to register a new member in the system.
  *
+ * @property organizationId The ID of the organization the member belongs to
  * @property branchId The ID of the branch where the member is registering
  * @property name Member's full name
  * @property nameArabic Member's name in Arabic (optional)
@@ -21,6 +22,7 @@ import java.util.UUID
  * @property notes Additional notes about the member (optional)
  */
 data class RegisterMemberCommand(
+    val organizationId: UUID,
     val branchId: UUID,
     val name: String,
     val nameArabic: String? = null,
