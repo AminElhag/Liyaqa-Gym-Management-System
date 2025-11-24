@@ -9,6 +9,7 @@ dependencies {
     // Internal dependencies
     implementation(project(":backend:backend-domain"))
     implementation(project(":backend:backend-application"))
+    implementation(project(":backend:backend-infrastructure"))
     implementation(project(":backend:backend-common"))
 
     // Kotlin
