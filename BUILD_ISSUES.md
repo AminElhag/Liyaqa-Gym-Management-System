@@ -872,5 +872,144 @@ If you need assistance with any of these issues, the key files to review are:
 
 ---
 
-**Last Updated**: 2025-11-23
+## Potential Runtime Issues (Null Safety Warnings)
+
+**Status**: ⚠️ **6 POTENTIAL RUNTIME ISSUES** - Will compile but may throw NullPointerException at runtime
+
+While all compilation errors have been fixed, the codebase review identified **6 null safety concerns** that could cause runtime failures. These are not compilation errors but use force-unwrap operators (`!!`) on nullable properties without adequate null checks.
+
+### Issue 12: Unsafe Force-Unwrap in CheckOutMemberUseCase ⚠️ HIGH RISK
+
+**File**: CheckOutMemberUseCase.kt:121-122
+**Risk Level**: 🔴 HIGH - Could throw NullPointerException at runtime
+
+**Problem**: Force-unwrapping nullable command parameters
+```kotlin
+val activeAccessOpt = accessLogRepository.findActiveByMemberAndBranch(
+    command.memberId!!,  // ❌ Unsafe: memberId is UUID?
+    command.branchId!!   // ❌ Unsafe: branchId is UUID?
+)
+```
+
+**Root Cause**: `CheckOutCommand` defines nullable properties:
+```kotlin
+data class CheckOutCommand(
+    val memberId: UUID?,      // Nullable
+    val accessLogId: UUID?,   // Nullable
+    val branchId: UUID?       // Nullable
+)
+```
+
+While the init block validates "either accessLogId or both memberId and branchId must be provided", the compiler cannot guarantee both are non-null.
+
+**Recommendation**: Add explicit null checks or use safe navigation:
+```kotlin
+val memberId = command.memberId ?: throw ValidationException("memberId is required")
+val branchId = command.branchId ?: throw ValidationException("branchId is required")
+```
+
+---
+
+### Issue 13: Unsafe Force-Unwrap in CheckInMemberUseCase ⚠️ MODERATE RISK
+
+**File**: CheckInMemberUseCase.kt:221
+**Risk Level**: 🟡 MODERATE
+
+**Problem**: Force-unwrapping memberId without validation
+```kotlin
+val member = getMember(command.memberId!!)  // ❌ Unsafe
+```
+
+**Recommendation**: Add null check before unwrapping
+
+---
+
+### Issue 14: Unsafe Force-Unwrap in FreezeSubscriptionUseCase ⚠️ MODERATE RISK
+
+**File**: FreezeSubscriptionUseCase.kt:223
+**Risk Level**: 🟡 MODERATE
+
+**Problem**: Force-unwrapping nullable date fields
+```kotlin
+val event = SubscriptionFrozenEvent(
+    subscriptionId = subscription.id,
+    memberId = subscription.memberId,
+    freezeStartDate = subscription.pausedAt!!,     // ❌ Unsafe
+    freezeEndDate = subscription.pausedUntil!!,    // ❌ Unsafe
+    newEndDate = newEndDate ?: subscription.pausedUntil!!  // ❌ Unsafe
+)
+```
+
+**Recommendation**: Ensure `Subscription.pause()` method guarantees these fields are set, or add null checks
+
+---
+
+### Issue 15: Unsafe Force-Unwrap in UpgradeSubscriptionUseCase ⚠️ LOW RISK
+
+**File**: UpgradeSubscriptionUseCase.kt:421
+**Risk Level**: 🟢 LOW (has preceding null check)
+
+**Problem**: Force-unwrapping after null check
+```kotlin
+if (newPlan.durationDays != null) {
+    val duration = newPlan.durationDays!!  // ❌ Redundant force-unwrap
+    val newEndDate = now.plusDays(duration.toLong())
+}
+```
+
+**Recommendation**: Use safe navigation instead:
+```kotlin
+newPlan.durationDays?.let { duration ->
+    val newEndDate = now.plusDays(duration.toLong())
+}
+```
+
+---
+
+### Issue 16: Unsafe Force-Unwrap in RenewSubscriptionUseCase ⚠️ LOW RISK
+
+**File**: RenewSubscriptionUseCase.kt:302
+**Risk Level**: 🟢 LOW
+
+**Problem**: Force-unwrapping plan duration
+```kotlin
+val duration = plan.durationDays!!  // ❌ Unsafe
+```
+
+**Recommendation**: Add null check or use safe navigation
+
+---
+
+### Issue 17: Unsafe Force-Unwrap in CheckOutMemberUseCase (checkOutTime) ⚠️ LOW-MODERATE RISK
+
+**File**: CheckOutMemberUseCase.kt:82
+**Risk Level**: 🟡 LOW-MODERATE
+
+**Problem**: Assuming checkOutTime is always set
+```kotlin
+checkOutTime = updatedAccessLog.checkOutTime!!,  // ❌ Unsafe
+```
+
+**Recommendation**: Verify `AccessLog.checkOut()` method always sets checkOutTime
+
+---
+
+### Null Safety Issues Summary
+
+| Issue | File | Line | Risk | Impact |
+|-------|------|------|------|--------|
+| 12 | CheckOutMemberUseCase | 121-122 | 🔴 HIGH | NullPointerException on null memberId/branchId |
+| 13 | CheckInMemberUseCase | 221 | 🟡 MODERATE | NullPointerException on null memberId |
+| 14 | FreezeSubscriptionUseCase | 223 | 🟡 MODERATE | NullPointerException on null pausedAt/pausedUntil |
+| 15 | UpgradeSubscriptionUseCase | 421 | 🟢 LOW | Safe due to preceding check, but poor style |
+| 16 | RenewSubscriptionUseCase | 302 | 🟢 LOW | NullPointerException if durationDays is null |
+| 17 | CheckOutMemberUseCase | 82 | 🟡 LOW-MODERATE | NullPointerException if checkOutTime not set |
+
+**Total Potential Runtime Issues**: 6
+
+**Note**: These issues will **not prevent compilation** but may cause `NullPointerException` errors at runtime under certain conditions. They should be addressed before production deployment.
+
+---
+
+**Last Updated**: 2025-11-24
 **Created By**: Claude Code Analysis Session
