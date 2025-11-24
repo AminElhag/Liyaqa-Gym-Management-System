@@ -1,11 +1,14 @@
 # Build Issues & Resolution Guide
 
-**Date**: 2025-11-23
-**Status**: ✅ **ALL COMPILATION ERRORS FIXED** - Code is ready
+**Date**: 2025-11-24
+**Status**: ⚠️ **4 COMPILATION ERRORS REMAIN** - Backend won't compile
 **Impact**:
 - ✅ **Issue 0 FIXED** - Gradle plugin error resolved
-- ✅ **ALL 20 compilation errors FIXED** - All code issues resolved (verified 2025-11-23)
-- Backend code is clean and ready to compile
+- ⚠️ **16 of 20 errors FIXED** - Progress made on previously documented issues
+- ❌ **4 COMPILATION ERRORS REMAIN** - Critical issues discovered during verification
+  - 3 errors: `PaymentResult.gatewayResponse` property doesn't exist
+  - 1 error: `Member.create()` missing `organizationId` parameter
+- Backend application cannot compile until these 4 errors are fixed
 - ⚠️ **Note**: Build testing blocked by sandbox environment network configuration (Java DNS resolution issue)
 
 ---
@@ -169,60 +172,81 @@ implementation("org.slf4j:slf4j-api")
 
 ---
 
-### Issue 4: Payment.markAsPaid() Method Signature Mismatches ✅ FIXED
+### Issue 4: PaymentResult.gatewayResponse Property Missing ❌ NOT FIXED
 
-**Problem**: Use cases calling `Payment.markAsPaid()` with non-existent parameters
+**Status**: ❌ **BLOCKING** - 3 compilation errors remain
+
+**Problem**: Use cases trying to access `PaymentResult.gatewayResponse` property which doesn't exist
 
 **Files Affected**: 3 use case files
 
-**Root Cause**: The `Payment.markAsPaid()` method signature (Payment.kt:63) only accepts:
-```kotlin
-fun markAsPaid(paymentGatewayResponse: String? = null): Payment
-```
+**Root Cause**:
+- `Payment.markAsPaid()` expects a `String?` parameter named `paymentGatewayResponse` (Payment.kt:63):
+  ```kotlin
+  fun markAsPaid(paymentGatewayResponse: String? = null): Payment
+  ```
+- Code is calling `payment.markAsPaid(paymentResult.gatewayResponse)`
+- But `PaymentResult` class (PaymentResult.kt:9-20) does NOT have a `gatewayResponse` property
 
-But use cases are trying to call it with `transactionId` and `paidAt` parameters that don't exist.
+**PaymentResult Available Properties**:
+```kotlin
+data class PaymentResult(
+    val success: Boolean,
+    val transactionId: String?,
+    val gatewayPaymentId: String?,      // ✅ Available
+    val amount: BigDecimal,
+    val currency: String,
+    val status: PaymentTransactionStatus,
+    val errorCode: String?,
+    val errorMessage: String?,
+    val processedAt: Instant,
+    val metadata: Map<String, String>
+    // ❌ NO gatewayResponse property!
+)
+```
 
 **Error Details**:
 
-**4.1 CreateSubscriptionUseCase.kt:275-276**
+**4.1 CreateSubscriptionUseCase.kt:274**
 ```kotlin
-// Lines 274-277
-val completedPayment = payment.markAsPaid(
-    transactionId = paymentResult.transactionId,  // ❌ No such parameter
-    paidAt = Instant.now()                        // ❌ No such parameter
-)
-```
-Errors:
-- `No parameter with name 'transactionId' found`
-- `No parameter with name 'paidAt' found`
-
-**4.2 RenewSubscriptionUseCase.kt:260-261**
-```kotlin
-// Same error - wrong parameters
-val completedPayment = payment.markAsPaid(
-    transactionId = paymentResult.transactionId,  // ❌ No such parameter
-    paidAt = Instant.now()                        // ❌ No such parameter
-)
-```
-
-**4.3 UpgradeSubscriptionUseCase.kt:374-375**
-```kotlin
-// Same error - wrong parameters
-val completedPayment = payment.markAsPaid(
-    transactionId = paymentResult.transactionId,  // ❌ No such parameter
-    paidAt = Instant.now()                        // ❌ No such parameter
-)
-```
-
-**Resolution**:
-The method already sets `paidAt = Instant.now()` internally (line 67 of Payment.kt). Simply call:
-```kotlin
-val completedPayment = payment.markAsPaid()
-// Or if you have gateway response:
 val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
+//                                         ^^^^^^^^^^^^^^^ Unresolved reference: gatewayResponse
 ```
 
-**Total Errors**: 6 (2 per file × 3 files)
+**4.2 RenewSubscriptionUseCase.kt:259**
+```kotlin
+val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
+//                                         ^^^^^^^^^^^^^^^ Unresolved reference: gatewayResponse
+```
+
+**4.3 UpgradeSubscriptionUseCase.kt:373**
+```kotlin
+val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
+//                                         ^^^^^^^^^^^^^^^ Unresolved reference: gatewayResponse
+```
+
+**Resolution Options**:
+
+**Option 1** (Recommended): Use `gatewayPaymentId` property
+```kotlin
+val completedPayment = payment.markAsPaid(paymentResult.gatewayPaymentId)
+```
+
+**Option 2**: Build a response string from available properties
+```kotlin
+val gatewayResponse = "Transaction: ${paymentResult.transactionId}, Gateway ID: ${paymentResult.gatewayPaymentId}"
+val completedPayment = payment.markAsPaid(gatewayResponse)
+```
+
+**Option 3**: Add `gatewayResponse` property to `PaymentResult` class
+```kotlin
+data class PaymentResult(
+    // ... existing properties
+    val gatewayResponse: String? = null  // Add this
+)
+```
+
+**Total Errors**: 3 (1 per file)
 
 ---
 
@@ -519,29 +543,141 @@ return Money.of(
 
 ---
 
+### Issue 11: Member.create() Missing organizationId Parameter ❌ NOT FIXED
+
+**Status**: ❌ **BLOCKING** - 1 compilation error remains
+
+**Problem**: `RegisterMemberUseCase` calling `Member.create()` without required `organizationId` parameter
+
+**Files Affected**: RegisterMemberUseCase.kt:71-79
+
+**Root Cause**:
+- `Member.create()` factory method requires `organizationId` as the FIRST parameter (Member.kt:63-64):
+  ```kotlin
+  fun create(
+      organizationId: UUID,    // ❌ Missing in call
+      branchId: UUID,
+      name: String,
+      nameArabic: String?,
+      contactInfo: ContactInfo,
+      nationalId: String?,
+      gender: Gender,
+      dateOfBirth: LocalDate?
+  ): Member
+  ```
+- But the use case is calling it without `organizationId`:
+  ```kotlin
+  val member = Member.create(
+      branchId = command.branchId,  // ❌ Should be 2nd parameter, not 1st
+      name = command.name,
+      // ... other parameters
+  )
+  ```
+
+**Error Details**:
+
+**RegisterMemberUseCase.kt:71-79**
+```kotlin
+val member = Member.create(
+    branchId = command.branchId,        // ❌ Missing organizationId before this
+    name = command.name,
+    nameArabic = command.nameArabic,
+    contactInfo = contactInfo,
+    nationalId = command.nationalId,
+    gender = command.gender,
+    dateOfBirth = command.dateOfBirth
+)
+```
+
+Error:
+```
+No value passed for parameter 'organizationId'
+```
+
+**Resolution Options**:
+
+**Option 1** (Recommended): Add `organizationId` to `RegisterMemberCommand` and pass it
+```kotlin
+// In RegisterMemberCommand - add organizationId field
+data class RegisterMemberCommand(
+    val organizationId: UUID,   // Add this
+    val branchId: UUID,
+    // ... other fields
+)
+
+// In RegisterMemberUseCase - pass it to Member.create()
+val member = Member.create(
+    organizationId = command.organizationId,  // Add this
+    branchId = command.branchId,
+    name = command.name,
+    // ... other parameters
+)
+```
+
+**Option 2**: Fetch `organizationId` from Branch repository
+```kotlin
+// Query the Branch to get its organizationId
+val branch = branchRepository.findById(command.branchId)
+    .getOrThrow()
+
+val member = Member.create(
+    organizationId = branch.organizationId,  // Get from Branch
+    branchId = command.branchId,
+    // ... other parameters
+)
+```
+
+**Option 3**: Pass `organizationId` from authentication context
+```kotlin
+// If organizationId is in the security context/token
+val organizationId = getCurrentOrganizationId()  // From auth context
+
+val member = Member.create(
+    organizationId = organizationId,
+    branchId = command.branchId,
+    // ... other parameters
+)
+```
+
+**Total Errors**: 1
+
+---
+
 ## Compilation Error Summary
 
 | Issue | Category | Files | Errors | Status |
 |-------|----------|-------|--------|--------|
-| 4 | Payment.markAsPaid() signature | 3 | 6 | ✅ FIXED |
+| 4 | PaymentResult.gatewayResponse missing | 3 | 3 | ❌ NOT FIXED |
 | 5 | Member.organizationId missing | 3 | 3 | ✅ FIXED |
 | 6 | Currency type mismatch | 3 | 3 | ✅ FIXED |
 | 7 | Nullable Int type safety | 3 | 4 | ✅ FIXED |
 | 8 | VAT.times() missing | 1 | 1 | ✅ FIXED |
 | 9 | BigDecimal constructor | 1 | 1 | ✅ FIXED |
 | 10 | Money.of() currency param | 1 | 1 | ✅ FIXED |
+| 11 | Member.create() organizationId param | 1 | 1 | ❌ NOT FIXED |
 
-**Total Compilation Errors**: ✅ **ALL 20 ERRORS FIXED** (verified 2025-11-23)
+**Total Compilation Errors**: ⚠️ **4 ERRORS REMAIN** (verified 2025-11-24)
+- ✅ **16 of 20** previously documented errors fixed
+- ❌ **3 errors** - PaymentResult.gatewayResponse property doesn't exist
+- ❌ **1 error** - Member.create() missing organizationId parameter
 
 ### Verification Summary
-All compilation errors have been verified as fixed in the current codebase:
-- **Issue 4**: All files use correct `markAsPaid(gatewayResponse)` signature
-- **Issue 5**: Member entity has `organizationId` property (line 14 of Member.kt)
-- **Issue 6**: All files use `currency.currencyCode` for String conversion
-- **Issue 7**: All nullable Int issues handled with `!!` or elvis operators
-- **Issue 8**: VAT class has `times()` operators for Int and BigDecimal (lines 29-38)
-- **Issue 9**: Using `BigDecimal.valueOf()` instead of package-private constructor
-- **Issue 10**: Money.of() calls use `.currencyCode` for currency parameter
+Verification completed on 2025-11-24. Results:
+
+**✅ FIXED** (16 errors):
+- **Issue 5**: Member entity has `organizationId` property (Member.kt:14) ✅
+- **Issue 6**: All PaymentGateway calls use `currency.currencyCode` for String conversion ✅
+- **Issue 7**: All nullable Int issues handled with `!!` operator ✅
+- **Issue 8**: VAT class has `times()` operators for Int and BigDecimal (VAT.kt:29-38) ✅
+- **Issue 9**: Using `BigDecimal.valueOf()` instead of package-private constructor ✅
+- **Issue 10**: Money.of() calls use `.currencyCode` for currency parameter ✅
+
+**❌ NOT FIXED** (4 errors):
+- **Issue 4**: Code calls `paymentResult.gatewayResponse` but property doesn't exist ❌
+  - CreateSubscriptionUseCase.kt:274
+  - RenewSubscriptionUseCase.kt:259
+  - UpgradeSubscriptionUseCase.kt:373
+- **Issue 11**: RegisterMemberUseCase.kt:71 missing `organizationId` parameter ❌
 
 ---
 
