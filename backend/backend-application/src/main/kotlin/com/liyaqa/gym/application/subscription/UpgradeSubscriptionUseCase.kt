@@ -370,7 +370,7 @@ class UpgradeSubscriptionUseCase(
             )
 
             // Mark payment as completed
-            val completedPayment = payment.markAsPaid(paymentResult.gatewayResponse)
+            val completedPayment = payment.markAsPaid(paymentResult.gatewayPaymentId)
 
             // Persist payment
             val savedPayment = paymentRepository.save(completedPayment)
