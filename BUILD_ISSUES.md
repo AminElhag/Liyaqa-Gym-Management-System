@@ -1,15 +1,17 @@
 # Build Issues & Resolution Guide
 
 **Date**: 2025-11-25
-**Status**: ✅ **APPLICATION RUNNING** - Database Connected, Backend Started Successfully
-**Latest Updates (2025-11-25)**:
+**Status**: ✅ **APPLICATION FULLY OPERATIONAL** - All Critical Issues Resolved
+**Latest Updates (2025-11-25 - Final)**:
+- ✅ **JWT Configuration FIXED** - Property names corrected, custom SecurityConfig now loads
+- ✅ **CSRF Disabled** - Custom security filter chain active, frontend API calls now work
 - ✅ **Database Configuration FIXED** - HikariCP datasource properties injection resolved
 - ✅ **Component Scanning FIXED** - Added @ComponentScan for infrastructure package
 - ✅ **Issue 34 (AuthService) FIXED** - Removed inappropriate @Transactional annotations, fixed Result unwrapping
-- ✅ **Application Startup SUCCESSFUL** - Backend running on port 8080
-- ✅ **Flyway Migrations** - 15 of 17 migrations completed successfully
-- ⚠️ **Flyway V16** - Still failing (performance indexes only, non-critical)
-- ⚠️ **TrainerRepository** - Implementation class missing (development task)
+- ✅ **Application Startup SUCCESSFUL** - Backend running on port 8080 with 109 endpoints
+- ✅ **Flyway Migrations** - All 18 migrations completed successfully
+- ✅ **21 JPA Repositories** - All repositories discovered and operational
+- ⚠️ **TrainerRepository** - Implementation class missing (development task, non-blocking)
 
 **Previous Status**:
 - ✅ **Issue 0 FIXED** - Gradle plugin error resolved
@@ -22,6 +24,42 @@
 ## Session Summary (2025-11-25) - Application Startup Success ✅
 
 ### Critical Fixes Completed This Session
+
+#### 0. JWT Configuration Property Mismatch Fixed ✅
+**File**: `backend/src/main/resources/application.yml:110-111`
+
+**Problem**: Custom SecurityConfig not loading, causing Spring Boot to use default security with CSRF enabled
+```
+Invalid CSRF token found for http://localhost:8080/api/v1/auth/login
+Frontend receiving 403 Forbidden errors on all API requests
+```
+
+**Root Cause**:
+- JWT property names in application.yml didn't match JwtTokenProvider expectations
+- JwtTokenProvider bean creation failed, cascading to SecurityConfig not loading
+- Spring Boot fell back to default SecurityFilterChain with CSRF enabled
+
+**Property Mismatch**:
+- JwtTokenProvider expected: `app.jwt.access-token-expiration-ms` and `app.jwt.refresh-token-expiration-ms`
+- application.yml had: `app.jwt.expiration` and `app.jwt.refresh-expiration`
+
+**Resolution**: Fixed property names in application.yml:
+```yaml
+app:
+  jwt:
+    secret: ${JWT_SECRET:liyaqa-gym-secret-key-change-this-in-production-please-use-a-strong-random-key}
+    access-token-expiration-ms: ${JWT_EXPIRATION:86400000} # 24 hours
+    refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days
+```
+
+**Verification**: ✅ Custom SecurityConfig loaded successfully:
+- JwtAuthenticationFilter configured and active in filter chain
+- CSRF disabled (no CsrfFilter in chain)
+- 109 controller mappings loaded
+- 21 JPA repositories discovered
+- API endpoints now accessible without CSRF errors
+
+---
 
 #### 1. Database Configuration Fixed ✅
 **File**: `backend/backend-infrastructure/src/main/kotlin/com/liyaqa/infrastructure/config/DatabaseConfig.kt:49`

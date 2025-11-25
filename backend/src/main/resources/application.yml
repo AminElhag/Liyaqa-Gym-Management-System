@@ -107,8 +107,8 @@ logging:
 app:
   jwt:
     secret: ${JWT_SECRET:liyaqa-gym-secret-key-change-this-in-production-please-use-a-strong-random-key}
-    expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
-    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
+    access-token-expiration-ms: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+    refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:19006}
