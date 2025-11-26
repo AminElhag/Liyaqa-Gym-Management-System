@@ -103,4 +103,18 @@ export const API_ENDPOINTS = {
     recentActivity: '/dashboard/recent-activity',
     upcomingClasses: '/dashboard/upcoming-classes',
   },
+  platform: {
+    auth: {
+      login: '/platform/auth/login',
+      logout: '/platform/auth/logout',
+      refresh: '/platform/auth/refresh',
+      me: '/platform/auth/me',
+    },
+    metrics: '/platform/metrics',
+    tenants: '/platform/tenants',
+    tenantDetail: (id: string) => `/platform/tenants/${id}`,
+    suspendTenant: (id: string) => `/platform/tenants/${id}/suspend`,
+    activateTenant: (id: string) => `/platform/tenants/${id}/activate`,
+    cancelTenant: (id: string) => `/platform/tenants/${id}/cancel`,
+  },
 };

@@ -3,6 +3,9 @@ import authReducer from '@/features/auth/authSlice';
 import membersReducer from '@/features/members/membersSlice';
 import classesReducer from '@/features/classes/classesSlice';
 import dashboardReducer from '@/features/dashboard/dashboardSlice';
+import platformAuthReducer from '@/features/platform/slices/platformAuthSlice';
+import platformMetricsReducer from '@/features/platform/slices/platformMetricsSlice';
+import tenantsReducer from '@/features/platform/slices/tenantsSlice';
 import { apiSlice } from './apiSlice';
 
 export const store = configureStore({
@@ -11,6 +14,9 @@ export const store = configureStore({
     members: membersReducer,
     classes: classesReducer,
     dashboard: dashboardReducer,
+    platformAuth: platformAuthReducer,
+    platformMetrics: platformMetricsReducer,
+    tenants: tenantsReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
