@@ -26,6 +26,8 @@ import org.springframework.web.cors.CorsConfigurationSource
  * - CORS configuration
  * - Method-level security with @PreAuthorize
  * - BCrypt password encoding
+ * - Multi-tenant support with TenantContextFilter
+ * - Role-based authorization for platform admins and tenant users
  */
 @Configuration
 @EnableWebSecurity
@@ -33,12 +35,13 @@ import org.springframework.web.cors.CorsConfigurationSource
 @Order(1)
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val tenantContextFilter: TenantContextFilter,
     private val userDetailsService: GymUserDetailsService,
     private val corsConfigurationSource: CorsConfigurationSource
 ) {
 
     /**
-     * Configure security filter chain
+     * Configure security filter chain with multi-tenant support
      */
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -48,6 +51,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
+                    // Public authentication endpoints
                     .requestMatchers(
                         "/api/v1/auth/login",
                         "/api/v1/auth/register",
@@ -55,6 +59,8 @@ class SecurityConfig(
                         "/api/v1/auth/forgot-password",
                         "/api/v1/auth/reset-password"
                     ).permitAll()
+
+                    // Public endpoints
                     .requestMatchers(
                         "/actuator/health",
                         "/actuator/info",
@@ -63,11 +69,42 @@ class SecurityConfig(
                         "/swagger-ui.html",
                         "/error"
                     ).permitAll()
+
+                    // Webhooks (payment gateways, etc.)
                     .requestMatchers(HttpMethod.POST, "/api/v1/webhooks/**").permitAll()
+
+                    // Platform admin routes - only accessible by PLATFORM_ADMIN role
+                    .requestMatchers("/api/v1/platform/**")
+                        .hasRole("PLATFORM_ADMIN")
+
+                    // Tenant onboarding and management routes
+                    .requestMatchers("/api/v1/tenant/onboarding/**")
+                        .hasAnyRole("TENANT_OWNER", "TENANT_ADMIN")
+
+                    .requestMatchers("/api/v1/tenant/**")
+                        .hasAnyRole("TENANT_OWNER", "TENANT_ADMIN", "TENANT_MANAGER")
+
+                    // Tenant-specific API routes (filtered by tenant context)
+                    // All authenticated users within a tenant can access
+                    .requestMatchers("/api/v1/members/**", "/api/v1/subscriptions/**")
+                        .hasAnyRole("MEMBER", "TRAINER", "STAFF", "ADMIN", "TENANT_OWNER")
+
+                    .requestMatchers("/api/v1/classes/**", "/api/v1/bookings/**")
+                        .hasAnyRole("MEMBER", "TRAINER", "STAFF", "ADMIN", "TENANT_OWNER")
+
+                    .requestMatchers("/api/v1/branches/**")
+                        .hasAnyRole("STAFF", "ADMIN", "TENANT_OWNER", "TENANT_ADMIN")
+
+                    .requestMatchers("/api/v1/analytics/**", "/api/v1/reports/**")
+                        .hasAnyRole("ADMIN", "TENANT_OWNER", "TENANT_ADMIN")
+
+                    // All other API requests require authentication
                     .requestMatchers("/api/v1/**").authenticated()
                     .anyRequest().authenticated()
             }
             .authenticationProvider(authenticationProvider())
+            // Add filters in correct order: Tenant context -> JWT authentication
+            .addFilterBefore(tenantContextFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling { exceptions ->
                 exceptions
