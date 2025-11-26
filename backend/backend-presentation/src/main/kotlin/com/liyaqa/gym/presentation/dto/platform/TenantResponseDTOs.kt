@@ -118,6 +118,23 @@ data class InvoiceResponse(
 )
 
 /**
+ * Subscription details response DTO
+ */
+data class SubscriptionDetailsResponse(
+    val id: UUID,
+    val plan: String,
+    val status: String,
+    val billingCycle: String,
+    val amount: Double,
+    val currency: String,
+    val nextBillingDate: LocalDate,
+    val autoRenew: Boolean,
+    val trialEndsAt: LocalDate?,
+    val paymentFailureCount: Int,
+    val lastPaymentFailureAt: Instant?
+)
+
+/**
  * Tenant search criteria
  */
 data class TenantSearchCriteria(

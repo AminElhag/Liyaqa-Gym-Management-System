@@ -25,6 +25,9 @@ data class TenantSubscription(
     val trialEndsAt: LocalDate?,
     val cancelledAt: Instant?,
     val cancellationReason: String?,
+    val paymentFailureCount: Int = 0,
+    val lastPaymentFailureAt: Instant? = null,
+    val lastPaymentFailureReason: String? = null,
     val createdAt: Instant,
     val updatedAt: Instant
 ) {
@@ -164,6 +167,31 @@ data class TenantSubscription(
         return copy(
             status = SubscriptionStatus.ACTIVE,
             trialEndsAt = null,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun recordPaymentFailure(reason: String): TenantSubscription {
+        return copy(
+            paymentFailureCount = paymentFailureCount + 1,
+            lastPaymentFailureAt = Instant.now(),
+            lastPaymentFailureReason = reason,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun resetPaymentFailures(): TenantSubscription {
+        return copy(
+            paymentFailureCount = 0,
+            lastPaymentFailureAt = null,
+            lastPaymentFailureReason = null,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun updateNextBillingDate(newDate: LocalDate): TenantSubscription {
+        return copy(
+            nextBillingDate = newDate,
             updatedAt = Instant.now()
         )
     }
