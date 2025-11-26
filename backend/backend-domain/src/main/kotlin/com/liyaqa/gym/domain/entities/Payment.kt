@@ -8,9 +8,11 @@ import java.util.UUID
 /**
  * Payment entity representing a financial transaction.
  * Can be linked to various payment contexts (subscription, PT session, etc.)
+ * Belongs to a Tenant.
  */
 data class Payment(
     val id: UUID,
+    val tenantId: UUID, // For direct tenant filtering
     val memberId: UUID,
     val organizationId: UUID,
     val branchId: UUID,
@@ -112,6 +114,7 @@ data class Payment(
 
     companion object {
         fun create(
+            tenantId: UUID,
             memberId: UUID,
             organizationId: UUID,
             branchId: UUID,
@@ -128,6 +131,7 @@ data class Payment(
 
             return Payment(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 memberId = memberId,
                 organizationId = organizationId,
                 branchId = branchId,

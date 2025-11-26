@@ -7,9 +7,11 @@ import java.util.UUID
 /**
  * Organization entity representing a gym business.
  * Root entity for the multi-tenant system.
+ * Now linked to a Tenant (B2B client) - each tenant has one organization.
  */
 data class Organization(
     val id: UUID,
+    val tenantId: UUID, // Link to the B2B tenant
     val name: String,
     val timezone: ZoneId,
     val settings: OrganizationSettings,
@@ -26,6 +28,7 @@ data class Organization(
 
     companion object {
         fun create(
+            tenantId: UUID,
             name: String,
             timezone: ZoneId = ZoneId.of("Asia/Riyadh"),
             settings: OrganizationSettings = OrganizationSettings.default()
@@ -33,6 +36,7 @@ data class Organization(
             val now = Instant.now()
             return Organization(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 name = name,
                 timezone = timezone,
                 settings = settings,
