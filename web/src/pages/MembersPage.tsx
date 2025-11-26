@@ -35,19 +35,28 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const memberSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  nameArabic: z.string().optional(),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  nationalId: z.string().optional(),
+  gender: z.enum(['MALE', 'FEMALE']),
   dateOfBirth: z.string().optional(),
-  status: z.enum(['ACTIVE', 'SUSPENDED', 'INACTIVE']),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  profilePhotoUrl: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 type MemberForm = z.infer<typeof memberSchema>;
 
 export default function MembersPage() {
   const dispatch = useAppDispatch();
-  const { members, isLoading, error, totalCount, currentPage, pageSize } = useAppSelector((state) => state.members);
+  const { members: membersData, isLoading, error, totalCount, currentPage, pageSize } = useAppSelector((state) => state.members);
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Ensure members is always an array to prevent .map errors
+  const members = Array.isArray(membersData) ? membersData : [];
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
@@ -64,7 +73,7 @@ export default function MembersPage() {
   } = useForm<MemberForm>({
     resolver: zodResolver(memberSchema),
     defaultValues: {
-      status: 'ACTIVE',
+      gender: 'MALE',
     },
   });
 
@@ -76,22 +85,32 @@ export default function MembersPage() {
     if (member) {
       setEditingMember(member);
       reset({
-        firstName: member.firstName,
-        lastName: member.lastName,
+        name: member.name || '',
+        nameArabic: member.nameArabic || '',
         email: member.email,
         phone: member.phone,
-        dateOfBirth: member.dateOfBirth,
-        status: member.status,
+        nationalId: member.nationalId || '',
+        gender: (member.gender as 'MALE' | 'FEMALE') || 'MALE',
+        dateOfBirth: member.dateOfBirth || '',
+        emergencyContactName: member.emergencyContactName || '',
+        emergencyContactPhone: member.emergencyContactPhone || '',
+        profilePhotoUrl: member.profilePhotoUrl || '',
+        notes: member.notes || '',
       });
     } else {
       setEditingMember(null);
       reset({
-        firstName: '',
-        lastName: '',
+        name: '',
+        nameArabic: '',
         email: '',
         phone: '',
+        nationalId: '',
+        gender: 'MALE',
         dateOfBirth: '',
-        status: 'ACTIVE',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        profilePhotoUrl: '',
+        notes: '',
       });
     }
     setOpenDialog(true);
@@ -108,12 +127,26 @@ export default function MembersPage() {
       if (editingMember) {
         await dispatch(updateMember({ id: editingMember.id, data })).unwrap();
       } else {
-        await dispatch(createMember(data)).unwrap();
+        // Check if user has a branchId
+        if (!user?.branchId) {
+          console.error('User does not have a branchId');
+          alert('Cannot create member: User account is not associated with a branch');
+          return;
+        }
+
+        // Add branchId from the logged-in user
+        const memberData = {
+          ...data,
+          branchId: user.branchId,
+        };
+        console.log('Creating member with data:', memberData);
+        await dispatch(createMember(memberData)).unwrap();
       }
       handleCloseDialog();
       dispatch(fetchMembers({ page: page + 1, pageSize: rowsPerPage, search: searchQuery }));
     } catch (err) {
       console.error('Failed to save member:', err);
+      console.error('Error details:', JSON.stringify(err, null, 2));
     }
   };
 
@@ -214,11 +247,11 @@ export default function MembersPage() {
               members.map((member) => (
                 <TableRow key={member.id} hover>
                   <TableCell>
-                    {member.firstName} {member.lastName}
+                    {member.name || `${member.firstName || ''} ${member.lastName || ''}`.trim()}
                   </TableCell>
                   <TableCell>{member.email}</TableCell>
                   <TableCell>{member.phone}</TableCell>
-                  <TableCell>{new Date(member.joinDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(member.createdAt || member.joinDate).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <Chip
                       label={member.status}
@@ -267,18 +300,18 @@ export default function MembersPage() {
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
               <TextField
-                {...register('firstName')}
-                label="First Name"
+                {...register('name')}
+                label="Full Name"
                 fullWidth
-                error={!!errors.firstName}
-                helperText={errors.firstName?.message}
+                error={!!errors.name}
+                helperText={errors.name?.message}
               />
               <TextField
-                {...register('lastName')}
-                label="Last Name"
+                {...register('nameArabic')}
+                label="Name (Arabic)"
                 fullWidth
-                error={!!errors.lastName}
-                helperText={errors.lastName?.message}
+                error={!!errors.nameArabic}
+                helperText={errors.nameArabic?.message}
               />
               <TextField
                 {...register('email')}
@@ -296,6 +329,25 @@ export default function MembersPage() {
                 helperText={errors.phone?.message}
               />
               <TextField
+                {...register('nationalId')}
+                label="National ID"
+                fullWidth
+                error={!!errors.nationalId}
+                helperText={errors.nationalId?.message}
+              />
+              <TextField
+                {...register('gender')}
+                label="Gender"
+                select
+                fullWidth
+                error={!!errors.gender}
+                helperText={errors.gender?.message}
+                defaultValue="MALE"
+              >
+                <MenuItem value="MALE">Male</MenuItem>
+                <MenuItem value="FEMALE">Female</MenuItem>
+              </TextField>
+              <TextField
                 {...register('dateOfBirth')}
                 label="Date of Birth"
                 type="date"
@@ -305,18 +357,28 @@ export default function MembersPage() {
                 helperText={errors.dateOfBirth?.message}
               />
               <TextField
-                {...register('status')}
-                label="Status"
-                select
+                {...register('emergencyContactName')}
+                label="Emergency Contact Name"
                 fullWidth
-                error={!!errors.status}
-                helperText={errors.status?.message}
-                defaultValue="ACTIVE"
-              >
-                <MenuItem value="ACTIVE">Active</MenuItem>
-                <MenuItem value="SUSPENDED">Suspended</MenuItem>
-                <MenuItem value="INACTIVE">Inactive</MenuItem>
-              </TextField>
+                error={!!errors.emergencyContactName}
+                helperText={errors.emergencyContactName?.message}
+              />
+              <TextField
+                {...register('emergencyContactPhone')}
+                label="Emergency Contact Phone"
+                fullWidth
+                error={!!errors.emergencyContactPhone}
+                helperText={errors.emergencyContactPhone?.message}
+              />
+              <TextField
+                {...register('notes')}
+                label="Notes"
+                fullWidth
+                multiline
+                rows={3}
+                error={!!errors.notes}
+                helperText={errors.notes?.message}
+              />
             </Box>
           </DialogContent>
           <DialogActions>

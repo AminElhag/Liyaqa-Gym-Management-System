@@ -4,13 +4,26 @@ import { API_ENDPOINTS } from '@/api/endpoints';
 
 export interface Member {
   id: string;
-  firstName: string;
-  lastName: string;
+  branchId?: string;
+  name?: string;
+  nameArabic?: string;
   email: string;
   phone: string;
+  nationalId?: string;
+  gender?: string;
   dateOfBirth?: string;
-  joinDate: string;
+  age?: number;
   status: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
+  profilePhotoUrl?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  joinDate?: string;
+  // Legacy fields for backward compatibility
+  firstName?: string;
+  lastName?: string;
   subscription?: {
     id: string;
     planName: string;
@@ -128,8 +141,20 @@ const membersSlice = createSlice({
     });
     builder.addCase(fetchMembers.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.members = action.payload.data;
-      state.totalCount = action.payload.total;
+      // Handle different API response formats defensively
+      if (Array.isArray(action.payload)) {
+        // API returned array directly
+        state.members = action.payload;
+        state.totalCount = action.payload.length;
+      } else if (action.payload && typeof action.payload === 'object') {
+        // API returned object with data property
+        state.members = Array.isArray(action.payload.data) ? action.payload.data : [];
+        state.totalCount = action.payload.total || state.members.length;
+      } else {
+        // Fallback to empty array
+        state.members = [];
+        state.totalCount = 0;
+      }
     });
     builder.addCase(fetchMembers.rejected, (state, action) => {
       state.isLoading = false;
