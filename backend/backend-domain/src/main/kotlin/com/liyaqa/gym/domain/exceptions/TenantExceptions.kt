@@ -49,3 +49,9 @@ class CannotReactivateTenantException(tenantId: UUID, reason: String) :
  */
 class InvalidTenantStatusException(tenantId: UUID, currentStatus: String, message: String) :
     RuntimeException("Invalid operation for tenant $tenantId with status $currentStatus: $message")
+
+/**
+ * Exception thrown when no tenant context has been set for the current request.
+ */
+class TenantContextNotSetException(message: String = "Tenant context not set") :
+    RuntimeException(message)
