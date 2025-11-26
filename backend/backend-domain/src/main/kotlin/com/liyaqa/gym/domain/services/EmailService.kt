@@ -71,4 +71,60 @@ interface EmailService {
         amount: Double,
         dueDate: LocalDate
     ): Result<Unit>
+
+    /**
+     * Send payment failure notice to tenant.
+     */
+    suspend fun sendPaymentFailureNotice(
+        tenant: Tenant,
+        reason: String,
+        retryDate: LocalDate
+    ): Result<Unit>
+
+    /**
+     * Send urgent payment notice to tenant.
+     */
+    suspend fun sendUrgentPaymentNotice(
+        tenant: Tenant,
+        reason: String,
+        retryDate: LocalDate
+    ): Result<Unit>
+
+    /**
+     * Send account suspension notice to tenant.
+     */
+    suspend fun sendAccountSuspensionNotice(
+        tenant: Tenant,
+        reason: String
+    ): Result<Unit>
+
+    /**
+     * Send trial converted to paid notice to tenant.
+     */
+    suspend fun sendTrialConvertedNotice(
+        tenant: Tenant
+    ): Result<Unit>
+
+    /**
+     * Send trial expired with payment failed notice to tenant.
+     */
+    suspend fun sendTrialExpiredPaymentFailedNotice(
+        tenant: Tenant
+    ): Result<Unit>
+
+    /**
+     * Send trial expired without payment method notice to tenant.
+     */
+    suspend fun sendTrialExpiredNoPaymentMethodNotice(
+        tenant: Tenant
+    ): Result<Unit>
+
+    /**
+     * Send payment reminder email to tenant.
+     */
+    suspend fun sendPaymentReminderEmail(
+        tenant: Tenant,
+        upcomingBillingDate: LocalDate,
+        amount: Double
+    ): Result<Unit>
 }

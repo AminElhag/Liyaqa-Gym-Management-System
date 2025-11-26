@@ -92,4 +92,39 @@ interface TenantSubscriptionRepository {
      * @return Count of subscriptions
      */
     fun countByStatus(status: SubscriptionStatus): Result<Long>
+
+    /**
+     * Find subscriptions due for billing on a specific date.
+     *
+     * @param date The billing date
+     * @return List of subscriptions due for billing
+     */
+    fun findByNextBillingDate(date: LocalDate): Result<List<TenantSubscription>>
+
+    /**
+     * Find trial subscriptions expiring on a specific date.
+     *
+     * @return List of trial subscriptions expiring today
+     */
+    fun findTrialsExpiringToday(): Result<List<TenantSubscription>>
+
+    /**
+     * Find subscriptions with next billing date between two dates.
+     *
+     * @param startDate The start date of the range
+     * @param endDate The end date of the range
+     * @return List of subscriptions
+     */
+    fun findByNextBillingDateBetween(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Result<List<TenantSubscription>>
+
+    /**
+     * Find subscriptions with payment failures that need retry.
+     *
+     * @param maxFailureCount Maximum number of failures to consider
+     * @return List of subscriptions with payment failures
+     */
+    fun findWithPaymentFailures(maxFailureCount: Int): Result<List<TenantSubscription>>
 }
