@@ -33,6 +33,10 @@ data class Tenant(
     val splashScreen: String?,
     val brandColors: BrandColors?,
     val customDomain: String?,
+    val domainVerificationToken: String?,
+    val domainVerificationStatus: DomainVerificationStatus?,
+    val domainVerifiedAt: Instant?,
+    val sslCertificateId: String?,
     val emailFromName: String?,
     val emailFromAddress: String?,
     val smsFromName: String?,
@@ -150,6 +154,57 @@ data class Tenant(
         return copy(logo = logoUrl, updatedAt = Instant.now())
     }
 
+    fun setCustomDomain(domain: String, verificationToken: String): Tenant {
+        require(domain.isNotBlank()) { "Custom domain cannot be blank" }
+        require(domain.matches(Regex("^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]\\.[a-z]{2,}$"))) {
+            "Invalid domain format"
+        }
+        return copy(
+            customDomain = domain.lowercase(),
+            domainVerificationToken = verificationToken,
+            domainVerificationStatus = DomainVerificationStatus.PENDING,
+            domainVerifiedAt = null,
+            sslCertificateId = null,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun verifyCustomDomain(sslCertificateId: String?): Tenant {
+        require(customDomain != null) { "No custom domain configured" }
+        require(domainVerificationStatus == DomainVerificationStatus.PENDING) {
+            "Domain is not in pending verification status"
+        }
+        return copy(
+            domainVerificationStatus = DomainVerificationStatus.VERIFIED,
+            domainVerifiedAt = Instant.now(),
+            sslCertificateId = sslCertificateId,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun failDomainVerification(): Tenant {
+        require(customDomain != null) { "No custom domain configured" }
+        return copy(
+            domainVerificationStatus = DomainVerificationStatus.FAILED,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun removeCustomDomain(): Tenant {
+        return copy(
+            customDomain = null,
+            domainVerificationToken = null,
+            domainVerificationStatus = null,
+            domainVerifiedAt = null,
+            sslCertificateId = null,
+            updatedAt = Instant.now()
+        )
+    }
+
+    fun hasVerifiedCustomDomain(): Boolean {
+        return customDomain != null && domainVerificationStatus == DomainVerificationStatus.VERIFIED
+    }
+
     fun softDelete(): Tenant {
         return copy(isDeleted = true, status = TenantStatus.CANCELLED, updatedAt = Instant.now())
     }
@@ -200,6 +255,10 @@ data class Tenant(
                 splashScreen = null,
                 brandColors = null,
                 customDomain = null,
+                domainVerificationToken = null,
+                domainVerificationStatus = null,
+                domainVerifiedAt = null,
+                sslCertificateId = null,
                 emailFromName = null,
                 emailFromAddress = null,
                 smsFromName = null,
@@ -255,6 +314,10 @@ data class Tenant(
                 splashScreen = null,
                 brandColors = null,
                 customDomain = null,
+                domainVerificationToken = null,
+                domainVerificationStatus = null,
+                domainVerifiedAt = null,
+                sslCertificateId = null,
                 emailFromName = null,
                 emailFromAddress = null,
                 smsFromName = null,
@@ -268,6 +331,15 @@ data class Tenant(
             )
         }
     }
+}
+
+/**
+ * Domain verification status for custom domains
+ */
+enum class DomainVerificationStatus {
+    PENDING,    // Domain added, awaiting verification
+    VERIFIED,   // Domain verified and active
+    FAILED      // Domain verification failed
 }
 
 /**

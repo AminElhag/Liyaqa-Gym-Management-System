@@ -138,15 +138,36 @@ class TenantContextFilter(
 
     /**
      * Extract tenant slug from request.
-     * Tries subdomain first, then falls back to header.
+     * Tries custom domain first, then subdomain, then falls back to header.
      *
      * Examples:
+     * - gym.example.com (custom domain) -> lookup by custom domain
      * - tenant1.liyaqa.com -> "tenant1"
      * - api.liyaqa.com with X-Tenant-Slug: tenant1 -> "tenant1"
      */
     private fun extractTenantSlug(request: HttpServletRequest): String? {
-        // Try subdomain first (e.g., tenant1.liyaqa.com)
         val host = request.serverName
+
+        // Check if this is a custom domain (not liyaqa.com)
+        if (!host.endsWith(".liyaqa.com") && host != "liyaqa.com" && host != "localhost") {
+            logger.debug("Custom domain detected: $host, looking up tenant by custom domain")
+            val tenantResult = tenantRepository.findByCustomDomain(host)
+
+            tenantResult.fold(
+                onSuccess = { optionalTenant ->
+                    if (optionalTenant.isPresent) {
+                        val tenant = optionalTenant.get()
+                        logger.debug("Found tenant by custom domain: ${tenant.slug}")
+                        return tenant.slug
+                    }
+                },
+                onFailure = { error ->
+                    logger.error("Error looking up tenant by custom domain: ${error.message}", error)
+                }
+            )
+        }
+
+        // Try subdomain (e.g., tenant1.liyaqa.com)
         val subdomain = extractSubdomain(host)
 
         if (subdomain != null) {

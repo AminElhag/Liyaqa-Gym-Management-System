@@ -121,4 +121,29 @@ interface TenantRepository {
      * @return Result indicating success
      */
     fun softDelete(tenantId: UUID): Result<Unit>
+
+    /**
+     * Find a tenant by its custom domain.
+     *
+     * @param domain The custom domain to search for
+     * @return Optional containing the tenant if found, empty otherwise
+     */
+    fun findByCustomDomain(domain: String): Result<Optional<Tenant>>
+
+    /**
+     * Check if a custom domain is already in use.
+     *
+     * @param domain The custom domain to check
+     * @return true if exists, false otherwise
+     */
+    fun existsByCustomDomain(domain: String): Result<Boolean>
+
+    /**
+     * Check if a custom domain is already in use (excluding a specific tenant).
+     *
+     * @param domain The custom domain to check
+     * @param excludeTenantId The tenant ID to exclude from the check
+     * @return true if exists, false otherwise
+     */
+    fun existsByCustomDomainExcludingTenant(domain: String, excludeTenantId: UUID): Result<Boolean>
 }
