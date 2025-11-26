@@ -112,3 +112,37 @@ data class TenantPaymentProcessedEvent(
 ) : DomainEvent {
     override val eventType: String = "TenantPaymentProcessed"
 }
+
+/**
+ * Event published when a custom domain is verified for a tenant.
+ */
+data class CustomDomainVerifiedEvent(
+    val tenantId: UUID,
+    val domain: String,
+    override val occurredAt: Instant
+) : DomainEvent {
+    override val eventType: String = "CustomDomainVerified"
+}
+
+/**
+ * Event published when a custom domain verification fails.
+ */
+data class CustomDomainVerificationFailedEvent(
+    val tenantId: UUID,
+    val domain: String,
+    val reason: String,
+    override val occurredAt: Instant
+) : DomainEvent {
+    override val eventType: String = "CustomDomainVerificationFailed"
+}
+
+/**
+ * Event published when a custom domain is removed.
+ */
+data class CustomDomainRemovedEvent(
+    val tenantId: UUID,
+    val domain: String,
+    override val occurredAt: Instant
+) : DomainEvent {
+    override val eventType: String = "CustomDomainRemoved"
+}
