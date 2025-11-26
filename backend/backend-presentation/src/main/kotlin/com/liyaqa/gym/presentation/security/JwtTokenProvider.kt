@@ -83,6 +83,30 @@ class JwtTokenProvider(
     }
 
     /**
+     * Generate token for platform admin
+     */
+    fun generatePlatformAdminToken(admin: com.liyaqa.gym.presentation.dto.platform.PlatformAdmin): String {
+        val now = Date()
+        val expiryDate = Date(now.time + accessTokenExpirationMs)
+
+        val claims = mutableMapOf<String, Any>(
+            "adminId" to admin.id.toString(),
+            "email" to admin.email,
+            "role" to admin.role.name,
+            "tokenType" to TokenType.ACCESS.name,
+            "isPlatformAdmin" to true
+        )
+
+        return Jwts.builder()
+            .subject(admin.id.toString())
+            .claims(claims)
+            .issuedAt(now)
+            .expiration(expiryDate)
+            .signWith(key, Jwts.SIG.HS512)
+            .compact()
+    }
+
+    /**
      * Get user ID from JWT token
      */
     fun getUserIdFromToken(token: String): UUID {
