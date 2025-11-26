@@ -6,9 +6,11 @@ import java.util.UUID
 /**
  * User entity for authentication and authorization.
  * Can represent both staff members and regular members.
+ * Belongs to a Tenant.
  */
 data class User(
     val id: UUID,
+    val tenantId: UUID, // For direct tenant filtering
     val email: String,
     val passwordHash: String,
     val role: UserRole,
@@ -63,6 +65,7 @@ data class User(
 
     companion object {
         fun createMemberUser(
+            tenantId: UUID,
             email: String,
             passwordHash: String,
             organizationId: UUID,
@@ -72,6 +75,7 @@ data class User(
             val now = Instant.now()
             return User(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 email = email,
                 passwordHash = passwordHash,
                 role = UserRole.MEMBER,
@@ -89,6 +93,7 @@ data class User(
         }
 
         fun createStaffUser(
+            tenantId: UUID,
             email: String,
             passwordHash: String,
             role: UserRole,
@@ -102,6 +107,7 @@ data class User(
             val now = Instant.now()
             return User(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 email = email,
                 passwordHash = passwordHash,
                 role = role,

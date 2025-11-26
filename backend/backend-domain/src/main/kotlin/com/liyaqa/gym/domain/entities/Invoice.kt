@@ -18,9 +18,11 @@ import java.util.UUID
  * - Subtotal, VAT breakdown, total
  * - QR code for invoice verification
  * - ZATCA clearance UUID
+ * Belongs to a Tenant.
  */
 data class Invoice(
     val id: UUID,
+    val tenantId: UUID, // For direct tenant filtering
     val invoiceNumber: String,
     val organizationId: UUID,
     val branchId: UUID,
@@ -198,6 +200,7 @@ data class Invoice(
 
     companion object {
         fun create(
+            tenantId: UUID,
             organizationId: UUID,
             branchId: UUID,
             memberId: UUID,
@@ -234,6 +237,7 @@ data class Invoice(
 
             return Invoice(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 invoiceNumber = invoiceNumber,
                 organizationId = organizationId,
                 branchId = branchId,

@@ -6,10 +6,11 @@ import java.util.UUID
 
 /**
  * Branch entity representing a physical gym location.
- * Belongs to an Organization.
+ * Belongs to an Organization and Tenant.
  */
 data class Branch(
     val id: UUID,
+    val tenantId: UUID, // For direct tenant filtering
     val organizationId: UUID,
     val name: String,
     val address: Address,
@@ -44,6 +45,7 @@ data class Branch(
 
     companion object {
         fun create(
+            tenantId: UUID,
             organizationId: UUID,
             name: String,
             address: Address,
@@ -52,6 +54,7 @@ data class Branch(
             val now = Instant.now()
             return Branch(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 organizationId = organizationId,
                 name = name,
                 address = address,

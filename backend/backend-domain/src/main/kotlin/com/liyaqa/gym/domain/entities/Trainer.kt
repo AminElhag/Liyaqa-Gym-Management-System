@@ -8,10 +8,11 @@ import java.util.UUID
 
 /**
  * Trainer entity representing a fitness instructor/trainer.
- * Belongs to a Branch.
+ * Belongs to a Branch and Tenant.
  */
 data class Trainer(
     val id: UUID,
+    val tenantId: UUID, // For direct tenant filtering
     val branchId: UUID,
     val name: String,
     val nameArabic: String?,
@@ -81,6 +82,7 @@ data class Trainer(
 
     companion object {
         fun create(
+            tenantId: UUID,
             branchId: UUID,
             name: String,
             nameArabic: String?,
@@ -93,6 +95,7 @@ data class Trainer(
             val now = Instant.now()
             return Trainer(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 branchId = branchId,
                 name = name,
                 nameArabic = nameArabic,

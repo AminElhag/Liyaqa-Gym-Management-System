@@ -7,10 +7,11 @@ import java.util.UUID
 
 /**
  * Member entity representing a gym member.
- * Belongs to a Branch.
+ * Belongs to a Branch, Organization, and Tenant.
  */
 data class Member(
     val id: UUID,
+    val tenantId: UUID, // For direct tenant filtering
     val organizationId: UUID,
     val branchId: UUID,
     val name: String,
@@ -61,6 +62,7 @@ data class Member(
 
     companion object {
         fun create(
+            tenantId: UUID,
             organizationId: UUID,
             branchId: UUID,
             name: String,
@@ -73,6 +75,7 @@ data class Member(
             val now = Instant.now()
             return Member(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 organizationId = organizationId,
                 branchId = branchId,
                 name = name,

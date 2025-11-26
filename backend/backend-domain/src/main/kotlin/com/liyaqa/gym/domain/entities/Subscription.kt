@@ -7,9 +7,11 @@ import java.util.UUID
 /**
  * Subscription entity linking a Member to a MembershipPlan.
  * Tracks the active membership period and status.
+ * Belongs to a Tenant.
  */
 data class Subscription(
     val id: UUID,
+    val tenantId: UUID, // For direct tenant filtering
     val memberId: UUID,
     val planId: UUID,
     val startDate: LocalDate,
@@ -109,6 +111,7 @@ data class Subscription(
 
     companion object {
         fun create(
+            tenantId: UUID,
             memberId: UUID,
             planId: UUID,
             startDate: LocalDate,
@@ -119,6 +122,7 @@ data class Subscription(
             val now = Instant.now()
             return Subscription(
                 id = UUID.randomUUID(),
+                tenantId = tenantId,
                 memberId = memberId,
                 planId = planId,
                 startDate = startDate,
