@@ -33,6 +33,9 @@ data class SubscriptionJpaEntity(
     @Column(name = "id", nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "tenant_id", nullable = false)
+    var tenantId: UUID,
+
     @Column(name = "member_id", nullable = false)
     var memberId: UUID,
 
@@ -84,6 +87,7 @@ data class SubscriptionJpaEntity(
 ) {
     constructor() : this(
         id = UUID.randomUUID(),
+        tenantId = UUID.randomUUID(),
         memberId = UUID.randomUUID(),
         planId = UUID.randomUUID(),
         startDate = LocalDate.now(),

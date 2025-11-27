@@ -11,7 +11,6 @@ import com.liyaqa.gym.domain.exceptions.FeatureNotAvailableException
 import com.liyaqa.gym.domain.exceptions.TenantNotFoundException
 import com.liyaqa.gym.domain.repositories.TenantRepository
 import com.liyaqa.gym.domain.services.CacheService
-import com.liyaqa.gym.domain.services.EventPublisher
 import com.liyaqa.gym.domain.services.StorageService
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -57,8 +56,9 @@ class UpdateTenantBrandingUseCase(
                 logoUrl = uploadResult.url
 
                 // Delete old logo if exists
-                if (tenant.logo != null) {
-                    storageService.delete(tenant.logo)
+                val oldLogo = tenant.logo
+                if (oldLogo != null) {
+                    storageService.delete(oldLogo)
                 }
             }
 
@@ -75,8 +75,9 @@ class UpdateTenantBrandingUseCase(
                 faviconUrl = uploadResult.url
 
                 // Delete old favicon if exists
-                if (tenant.favicon != null) {
-                    storageService.delete(tenant.favicon)
+                val oldFavicon = tenant.favicon
+                if (oldFavicon != null) {
+                    storageService.delete(oldFavicon)
                 }
             }
 
@@ -122,7 +123,7 @@ class UpdateTenantBrandingUseCase(
                 tenantNameArabic = updatedTenant.nameArabic,
                 logo = updatedTenant.logo,
                 favicon = faviconUrl,
-                brandColors = updatedTenant.brandColors ?: BrandColors.default(),
+                brandColors = updatedTenant.brandColors?.let { convertBrandColors(it) } ?: BrandColors.default(),
                 customDomain = updatedTenant.customDomain,
                 emailFromName = updatedTenant.emailFromName ?: updatedTenant.name,
                 emailFromAddress = updatedTenant.emailFromAddress
@@ -130,7 +131,7 @@ class UpdateTenantBrandingUseCase(
                 smsFromName = updatedTenant.smsFromName ?: updatedTenant.name,
                 supportEmail = updatedTenant.contactInfo.primaryContactEmail,
                 supportPhone = updatedTenant.contactInfo.primaryContactPhone,
-                socialLinks = updatedTenant.socialLinks,
+                socialLinks = updatedTenant.socialLinks?.let { convertSocialLinks(it) },
                 mobileAppConfig = getMobileAppConfig(updatedTenant)
             )
 
@@ -138,6 +139,26 @@ class UpdateTenantBrandingUseCase(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun convertBrandColors(tenantColors: com.liyaqa.gym.domain.entities.tenant.BrandColors): BrandColors {
+        return BrandColors(
+            primaryColor = tenantColors.primaryColor,
+            secondaryColor = tenantColors.secondaryColor,
+            accentColor = tenantColors.accentColor
+        )
+    }
+
+    private fun convertSocialLinks(tenantLinks: com.liyaqa.gym.domain.entities.tenant.SocialLinks): com.liyaqa.gym.domain.entities.branding.SocialLinks {
+        return com.liyaqa.gym.domain.entities.branding.SocialLinks(
+            facebook = tenantLinks.facebook,
+            instagram = tenantLinks.instagram,
+            twitter = tenantLinks.twitter,
+            linkedin = tenantLinks.linkedin,
+            tiktok = tenantLinks.tiktok,
+            youtube = tenantLinks.youtube,
+            website = tenantLinks.website
+        )
     }
 
     private fun validateAndNormalizeBrandColors(

@@ -34,10 +34,12 @@ class UserEntityMapper {
 
     /**
      * Convert JPA entity to domain entity.
+     * Note: User's tenantId is derived from their organizationId
      */
     fun toDomain(entity: UserJpaEntity): User {
         return User(
             id = entity.id,
+            tenantId = entity.organizationId,  // User's tenant is their organization
             email = entity.email,
             passwordHash = entity.passwordHash,
             role = entity.role,

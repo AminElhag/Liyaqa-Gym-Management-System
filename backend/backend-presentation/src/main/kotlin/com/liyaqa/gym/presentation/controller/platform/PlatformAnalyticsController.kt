@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -42,12 +44,15 @@ class PlatformAnalyticsController(
     fun getDashboardMetrics(): ResponseEntity<PlatformDashboardMetrics> {
         logger.info("Getting platform dashboard metrics")
 
+        // Use large page size to get all tenants (in production, use proper aggregation queries)
+        val pageable = PageRequest.of(0, 10000)
+
         val tenants = runBlocking {
-            tenantRepository.findAll().getOrNull() ?: emptyList()
+            tenantRepository.findAll(pageable).getOrNull()?.content ?: emptyList()
         }
 
         val subscriptions = runBlocking {
-            subscriptionRepository.findAll().getOrNull() ?: emptyList()
+            subscriptionRepository.findAll(pageable).getOrNull()?.content ?: emptyList()
         }
 
         val totalTenants = tenants.size
@@ -62,11 +67,11 @@ class PlatformAnalyticsController(
             .sumOf { subscription ->
                 when (subscription.billingCycle.name) {
                     "MONTHLY" -> subscription.amount.amount
-                    "QUARTERLY" -> subscription.amount.amount / 3
-                    "ANNUAL" -> subscription.amount.amount / 12
-                    else -> 0.0
+                    "QUARTERLY" -> subscription.amount.amount / java.math.BigDecimal("3.0")
+                    "ANNUAL" -> subscription.amount.amount / java.math.BigDecimal("12.0")
+                    else -> java.math.BigDecimal.ZERO
                 }
-            }
+            }.toDouble()
 
         val arr = mrr * 12 // Annual Recurring Revenue
 
@@ -88,7 +93,7 @@ class PlatformAnalyticsController(
 
         // Calculate churn rate (simplified)
         val churnRate = if (totalTenants > 0) {
-            (cancelledTenants.toDouble() / totalTenants) * 100
+            (cancelledTenants.toDouble() / totalTenants.toDouble()) * 100.0
         } else {
             0.0
         }
@@ -123,24 +128,27 @@ class PlatformAnalyticsController(
     ): ResponseEntity<RevenueAnalytics> {
         logger.info("Getting revenue analytics from $startDate to $endDate")
 
+        val pageable = PageRequest.of(0, 10000)
+
         val subscriptions = runBlocking {
-            subscriptionRepository.findAll().getOrNull() ?: emptyList()
+            subscriptionRepository.findAll(pageable).getOrNull()?.content ?: emptyList()
         }
 
         val tenants = runBlocking {
-            tenantRepository.findAll().getOrNull() ?: emptyList()
+            tenantRepository.findAll(pageable).getOrNull()?.content ?: emptyList()
         }
 
         // Calculate total revenue
         val totalRevenue = subscriptions
             .filter { it.status.name == "ACTIVE" || it.status.name == "TRIAL" }
             .sumOf { it.amount.amount }
+            .toDouble()
 
         // Revenue by plan
         val revenueByPlan = subscriptions
             .filter { it.status.name == "ACTIVE" || it.status.name == "TRIAL" }
             .groupBy { it.plan.displayName }
-            .mapValues { (_, subs) -> subs.sumOf { it.amount.amount } }
+            .mapValues { (_, subs) -> subs.sumOf { it.amount.amount }.toDouble() }
 
         // Revenue by month (simplified - using creation dates)
         val monthlyRevenues = mutableListOf<MonthlyRevenue>()
@@ -167,6 +175,7 @@ class PlatformAnalyticsController(
                     !subDate.isBefore(monthStart) && !subDate.isAfter(monthEnd)
                 }
                 .sumOf { it.amount.amount }
+                .toDouble()
 
             monthlyRevenues.add(
                 MonthlyRevenue(
@@ -200,8 +209,10 @@ class PlatformAnalyticsController(
     ): ResponseEntity<List<TenantGrowthData>> {
         logger.info("Getting tenant growth analytics for period: $period")
 
+        val pageable = PageRequest.of(0, 10000)
+
         val tenants = runBlocking {
-            tenantRepository.findAll().getOrNull() ?: emptyList()
+            tenantRepository.findAll(pageable).getOrNull()?.content ?: emptyList()
         }
 
         val growthData = mutableListOf<TenantGrowthData>()

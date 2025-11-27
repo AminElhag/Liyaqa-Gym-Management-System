@@ -9,4 +9,4 @@ import java.util.UUID
 data class TenantBrandingUpdatedEvent(
     val tenantId: UUID,
     override val occurredAt: Instant
-) : DomainEvent
+) : DomainEvent()

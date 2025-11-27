@@ -88,6 +88,7 @@ class CreateSubscriptionUseCase(
 
             // 6. Create subscription entity
             val subscription = Subscription.create(
+                tenantId = member.organizationId,
                 memberId = command.memberId,
                 planId = command.planId,
                 startDate = command.startDate,
@@ -258,6 +259,7 @@ class CreateSubscriptionUseCase(
 
             // Create payment entity
             val payment = Payment.create(
+                tenantId = member.organizationId,
                 memberId = member.id,
                 organizationId = member.organizationId,
                 branchId = member.branchId,

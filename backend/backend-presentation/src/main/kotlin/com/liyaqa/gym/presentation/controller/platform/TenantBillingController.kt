@@ -68,16 +68,16 @@ class TenantBillingController(
         logger.info("Processing billing for tenant: $tenantId")
 
         val invoice = runBlocking {
-            processBillingUseCase.execute(tenantId)
+            processBillingUseCase.execute(tenantId).getOrThrow()
         }
 
         // Convert to response
         val response = InvoiceResponse(
-            id = UUID.randomUUID(),
-            tenantId = tenantId,
-            invoiceNumber = "INV-${System.currentTimeMillis()}",
-            amount = invoice.amount.amount,
-            currency = invoice.currency.currencyCode,
+            id = invoice.id,
+            tenantId = invoice.tenantId,
+            invoiceNumber = invoice.invoiceNumber,
+            amount = invoice.totalAmount.amount.toDouble(),
+            currency = "SAR", // Saudi Riyal - default currency
             status = invoice.status.name,
             dueDate = invoice.dueDate,
             paidAt = invoice.paidAt,
@@ -102,12 +102,25 @@ class TenantBillingController(
 
         // TODO: Implement UpdateTenantPaymentMethodUseCase when available
         // For now, just update the subscription
-        val subscription = runBlocking {
-            subscriptionRepository.findByTenantId(tenantId).getOrNull()
-        } ?: throw IllegalArgumentException("No subscription found for tenant: $tenantId")
+        val subscriptionOpt = runBlocking {
+            subscriptionRepository.findActiveByTenant(tenantId).getOrNull()
+        }
+
+        if (subscriptionOpt == null || !subscriptionOpt.isPresent) {
+            throw IllegalArgumentException("No active subscription found for tenant: $tenantId")
+        }
+
+        val subscription = subscriptionOpt.get()
+
+        // Convert payment method string to enum (or keep null if not valid)
+        val paymentMethod = try {
+            com.liyaqa.gym.domain.entities.PaymentMethod.valueOf(request.paymentMethodId.uppercase())
+        } catch (e: IllegalArgumentException) {
+            null
+        }
 
         val updatedSubscription = subscription.copy(
-            paymentMethod = request.paymentMethodId,
+            paymentMethod = paymentMethod,
             updatedAt = Instant.now()
         )
 
@@ -130,17 +143,19 @@ class TenantBillingController(
     ): ResponseEntity<Map<String, Any>> {
         logger.info("Getting billing summary for tenant: $tenantId")
 
-        val subscription = runBlocking {
-            subscriptionRepository.findByTenantId(tenantId).getOrNull()
+        val subscriptionOpt = runBlocking {
+            subscriptionRepository.findActiveByTenant(tenantId).getOrNull()
         }
+
+        val subscription = subscriptionOpt?.orElse(null)
 
         val summary = mapOf(
             "tenantId" to tenantId,
             "currentPlan" to (subscription?.plan?.displayName ?: "N/A"),
             "billingCycle" to (subscription?.billingCycle?.name ?: "N/A"),
             "nextBillingDate" to (subscription?.nextBillingDate ?: LocalDate.now()),
-            "amount" to (subscription?.amount?.amount ?: 0.0),
-            "currency" to (subscription?.amount?.currency?.currencyCode ?: "SAR"),
+            "amount" to (subscription?.amount?.amount?.toDouble() ?: 0.0),
+            "currency" to "SAR", // Saudi Riyal - default currency
             "status" to (subscription?.status?.name ?: "UNKNOWN"),
             "autoRenew" to (subscription?.autoRenew ?: false),
             "paymentMethod" to (subscription?.paymentMethod ?: "Not set")

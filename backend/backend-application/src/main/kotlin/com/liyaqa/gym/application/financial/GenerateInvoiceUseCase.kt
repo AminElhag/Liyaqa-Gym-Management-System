@@ -80,6 +80,7 @@ class GenerateInvoiceUseCase(
 
             // 4. Create invoice entity (VAT calculated automatically)
             val invoice = Invoice.create(
+                tenantId = command.organizationId,
                 organizationId = command.organizationId,
                 branchId = command.branchId,
                 memberId = command.memberId,

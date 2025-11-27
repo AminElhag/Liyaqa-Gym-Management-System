@@ -72,6 +72,7 @@ class ProcessPaymentUseCase(
 
             // 5. Create payment entity
             val payment = Payment.create(
+                tenantId = command.organizationId,
                 memberId = command.memberId,
                 organizationId = command.organizationId,
                 branchId = command.branchId,

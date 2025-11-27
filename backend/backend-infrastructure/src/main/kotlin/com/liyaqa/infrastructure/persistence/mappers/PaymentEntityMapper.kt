@@ -21,6 +21,7 @@ class PaymentEntityMapper {
     fun toEntity(domain: Payment): PaymentJpaEntity {
         return PaymentJpaEntity(
             id = domain.id,
+            tenantId = domain.tenantId,
             memberId = domain.memberId,
             organizationId = domain.organizationId,
             branchId = domain.branchId,
@@ -51,6 +52,7 @@ class PaymentEntityMapper {
     fun toDomain(entity: PaymentJpaEntity): Payment {
         return Payment(
             id = entity.id,
+            tenantId = entity.tenantId,
             memberId = entity.memberId,
             organizationId = entity.organizationId,
             branchId = entity.branchId,

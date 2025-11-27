@@ -29,6 +29,9 @@ data class BranchJpaEntity(
     @Column(name = "id", nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "tenant_id", nullable = false)
+    var tenantId: UUID,
+
     @Column(name = "organization_id", nullable = false)
     var organizationId: UUID,
 
@@ -62,6 +65,7 @@ data class BranchJpaEntity(
 ) {
     constructor() : this(
         id = UUID.randomUUID(),
+        tenantId = UUID.randomUUID(),
         organizationId = UUID.randomUUID(),
         name = "",
         address = AddressEmbeddable(),
@@ -79,6 +83,9 @@ data class AddressEmbeddable(
 
     @Column(name = "city", nullable = false, length = 100)
     var city: String = "",
+
+    @Column(name = "state", nullable = false, length = 100)
+    var state: String = "",
 
     @Column(name = "country", nullable = false, length = 100)
     var country: String = "Saudi Arabia",

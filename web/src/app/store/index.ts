@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/features/auth/authSlice';
 import membersReducer from '@/features/members/membersSlice';
+import branchesReducer from '@/features/branches/branchesSlice';
 import classesReducer from '@/features/classes/classesSlice';
 import dashboardReducer from '@/features/dashboard/dashboardSlice';
 import platformAuthReducer from '@/features/platform/slices/platformAuthSlice';
@@ -12,6 +13,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     members: membersReducer,
+    branches: branchesReducer,
     classes: classesReducer,
     dashboard: dashboardReducer,
     platformAuth: platformAuthReducer,

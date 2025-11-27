@@ -243,6 +243,7 @@ class RenewSubscriptionUseCase(
 
             // Create payment entity
             val payment = Payment.create(
+                tenantId = member.organizationId,
                 memberId = subscription.memberId,
                 organizationId = member.organizationId,
                 branchId = member.branchId,

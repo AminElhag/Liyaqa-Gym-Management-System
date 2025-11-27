@@ -5,6 +5,7 @@ import com.liyaqa.gym.domain.valueobjects.ContactInfo
 import com.liyaqa.infrastructure.persistence.entities.ContactInfoEmbeddable
 import com.liyaqa.infrastructure.persistence.entities.MemberJpaEntity
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 /**
  * Mapper between Member domain entity and MemberJpaEntity.
@@ -18,6 +19,7 @@ class MemberEntityMapper {
     fun toEntity(domain: Member): MemberJpaEntity {
         return MemberJpaEntity(
             id = domain.id,
+            tenantId = domain.tenantId,
             organizationId = domain.organizationId,
             branchId = domain.branchId,
             name = domain.name,
@@ -42,6 +44,7 @@ class MemberEntityMapper {
     fun toDomain(entity: MemberJpaEntity): Member {
         return Member(
             id = entity.id,
+            tenantId = entity.tenantId,
             organizationId = entity.organizationId,
             branchId = entity.branchId,
             name = entity.name,

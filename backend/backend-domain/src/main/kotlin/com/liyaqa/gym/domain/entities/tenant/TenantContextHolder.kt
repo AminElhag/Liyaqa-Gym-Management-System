@@ -1,5 +1,6 @@
 package com.liyaqa.gym.domain.entities.tenant
 
+import com.liyaqa.gym.domain.exceptions.TenantContextNotSetException
 import java.util.UUID
 
 /**

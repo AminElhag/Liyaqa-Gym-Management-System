@@ -26,6 +26,13 @@ object TenantContext {
     }
 
     /**
+     * Get the current tenant ID (same as organization ID in our multi-tenant architecture)
+     */
+    fun getCurrentTenantId(): UUID {
+        return organizationId.get() ?: throw IllegalStateException("No tenant context set for current request")
+    }
+
+    /**
      * Set the current branch ID
      */
     fun setBranchId(id: UUID?) {

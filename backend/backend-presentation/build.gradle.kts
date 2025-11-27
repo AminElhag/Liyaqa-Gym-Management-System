@@ -15,11 +15,16 @@ dependencies {
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
     // Spring Web
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    // AspectJ
+    implementation("org.springframework.boot:spring-boot-starter-aop")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:${rootProject.extra["jjwtVersion"]}")

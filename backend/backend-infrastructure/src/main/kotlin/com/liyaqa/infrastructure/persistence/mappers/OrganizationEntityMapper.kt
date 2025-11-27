@@ -29,10 +29,12 @@ class OrganizationEntityMapper {
 
     /**
      * Convert JPA entity to domain entity.
+     * Note: Organization IS the tenant, so tenantId = organization's own ID
      */
     fun toDomain(entity: OrganizationJpaEntity): Organization {
         return Organization(
             id = entity.id,
+            tenantId = entity.id,  // Organization is the tenant root, so it references itself
             name = entity.name,
             timezone = ZoneId.of(entity.timezone),
             settings = toDomainSettings(entity.settings),

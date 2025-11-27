@@ -9,7 +9,7 @@ import java.util.UUID
 data class TenantOnboardingCompletedEvent(
     val tenantId: UUID,
     override val occurredAt: Instant = Instant.now()
-) : DomainEvent
+) : DomainEvent()
 
 /**
  * Event published when a tenant is activated after completing onboarding
@@ -17,7 +17,7 @@ data class TenantOnboardingCompletedEvent(
 data class TenantActivatedEvent(
     val tenantId: UUID,
     override val occurredAt: Instant = Instant.now()
-) : DomainEvent
+) : DomainEvent()
 
 /**
  * Event published when an onboarding step is completed
@@ -27,4 +27,4 @@ data class OnboardingStepCompletedEvent(
     val step: String,
     val data: Map<String, Any>?,
     override val occurredAt: Instant = Instant.now()
-) : DomainEvent
+) : DomainEvent()

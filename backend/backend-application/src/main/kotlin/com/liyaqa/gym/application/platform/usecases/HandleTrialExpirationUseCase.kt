@@ -30,6 +30,11 @@ class HandleTrialExpirationUseCase(
 
     private val logger = LoggerFactory.getLogger(HandleTrialExpirationUseCase::class.java)
 
+    companion object {
+        // System user ID for automated actions
+        private val SYSTEM_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+    }
+
     suspend fun execute(tenantId: UUID): Result<Unit> {
         return try {
             logger.info("Handling trial expiration for tenant: $tenantId")
@@ -79,7 +84,8 @@ class HandleTrialExpirationUseCase(
                     suspendTenantUseCase.execute(
                         SuspendTenantCommand(
                             tenantId = tenantId,
-                            reason = "Trial expired and payment failed"
+                            reason = "Trial expired and payment failed",
+                            suspendedBy = SYSTEM_USER_ID
                         )
                     ).getOrThrow()
 
@@ -92,7 +98,8 @@ class HandleTrialExpirationUseCase(
                 suspendTenantUseCase.execute(
                     SuspendTenantCommand(
                         tenantId = tenantId,
-                        reason = "Trial expired without payment method"
+                        reason = "Trial expired without payment method",
+                        suspendedBy = SYSTEM_USER_ID
                     )
                 ).getOrThrow()
 

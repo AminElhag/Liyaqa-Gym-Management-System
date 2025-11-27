@@ -34,6 +34,9 @@ data class MemberJpaEntity(
     @Column(name = "id", nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "tenant_id", nullable = false)
+    var tenantId: UUID,
+
     @Column(name = "organization_id", nullable = false)
     var organizationId: UUID,
 
@@ -92,6 +95,7 @@ data class MemberJpaEntity(
 ) {
     constructor() : this(
         id = UUID.randomUUID(),
+        tenantId = UUID.randomUUID(),
         organizationId = UUID.randomUUID(),
         branchId = UUID.randomUUID(),
         name = "",

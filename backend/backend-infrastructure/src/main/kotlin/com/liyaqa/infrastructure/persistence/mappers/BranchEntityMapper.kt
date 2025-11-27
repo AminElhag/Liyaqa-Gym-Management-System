@@ -18,6 +18,7 @@ class BranchEntityMapper {
     fun toEntity(domain: Branch): BranchJpaEntity {
         return BranchJpaEntity(
             id = domain.id,
+            tenantId = domain.tenantId,
             organizationId = domain.organizationId,
             name = domain.name,
             address = toEmbeddable(domain.address),
@@ -34,6 +35,7 @@ class BranchEntityMapper {
     fun toDomain(entity: BranchJpaEntity): Branch {
         return Branch(
             id = entity.id,
+            tenantId = entity.tenantId,
             organizationId = entity.organizationId,
             name = entity.name,
             address = toDomainAddress(entity.address),
@@ -48,6 +50,7 @@ class BranchEntityMapper {
         return AddressEmbeddable(
             street = address.street,
             city = address.city,
+            state = address.state,
             country = address.country,
             postalCode = address.postalCode
         )
@@ -57,6 +60,7 @@ class BranchEntityMapper {
         return Address(
             street = embeddable.street,
             city = embeddable.city,
+            state = embeddable.state,
             country = embeddable.country,
             postalCode = embeddable.postalCode
         )

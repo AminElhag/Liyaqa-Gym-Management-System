@@ -41,6 +41,14 @@ interface TenantSubscriptionRepository {
     fun findByTenant(tenantId: UUID, pageable: Pageable): Result<Page<TenantSubscription>>
 
     /**
+     * Find all subscriptions with pagination.
+     *
+     * @param pageable Pagination and sorting parameters
+     * @return Page of subscriptions
+     */
+    fun findAll(pageable: Pageable): Result<Page<TenantSubscription>>
+
+    /**
      * Find subscriptions by status.
      *
      * @param status The subscription status

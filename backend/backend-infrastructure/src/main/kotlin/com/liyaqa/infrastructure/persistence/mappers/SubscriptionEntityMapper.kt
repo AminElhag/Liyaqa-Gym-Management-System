@@ -16,6 +16,7 @@ class SubscriptionEntityMapper {
     fun toEntity(domain: Subscription): SubscriptionJpaEntity {
         return SubscriptionJpaEntity(
             id = domain.id,
+            tenantId = domain.tenantId,
             memberId = domain.memberId,
             planId = domain.planId,
             startDate = domain.startDate,
@@ -38,6 +39,7 @@ class SubscriptionEntityMapper {
     fun toDomain(entity: SubscriptionJpaEntity): Subscription {
         return Subscription(
             id = entity.id,
+            tenantId = entity.tenantId,
             memberId = entity.memberId,
             planId = entity.planId,
             startDate = entity.startDate,

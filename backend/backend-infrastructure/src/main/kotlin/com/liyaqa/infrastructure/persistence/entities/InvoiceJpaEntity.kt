@@ -39,6 +39,9 @@ data class InvoiceJpaEntity(
     @Column(name = "id", nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "tenant_id", nullable = false)
+    var tenantId: UUID,
+
     @Column(name = "invoice_number", nullable = false, length = 100, unique = true)
     var invoiceNumber: String,
 
@@ -168,6 +171,7 @@ data class InvoiceJpaEntity(
 ) {
     constructor() : this(
         id = UUID.randomUUID(),
+        tenantId = UUID.randomUUID(),
         invoiceNumber = "",
         organizationId = UUID.randomUUID(),
         branchId = UUID.randomUUID(),

@@ -34,6 +34,9 @@ data class TrainerJpaEntity(
     @Column(name = "id", nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "tenant_id", nullable = false)
+    var tenantId: UUID,
+
     @Column(name = "branch_id", nullable = false)
     var branchId: UUID,
 
@@ -96,6 +99,7 @@ data class TrainerJpaEntity(
 ) {
     constructor() : this(
         id = UUID.randomUUID(),
+        tenantId = UUID.randomUUID(),
         branchId = UUID.randomUUID(),
         name = "",
         contactInfo = ContactInfoEmbeddable(),

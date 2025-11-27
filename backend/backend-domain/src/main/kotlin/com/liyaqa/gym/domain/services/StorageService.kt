@@ -1,6 +1,6 @@
 package com.liyaqa.gym.domain.services
 
-import org.springframework.web.multipart.MultipartFile
+import java.io.InputStream
 
 /**
  * Interface for file storage service.
@@ -18,7 +18,7 @@ interface StorageService {
      * @return Result containing the upload result with URL
      */
     suspend fun upload(
-        file: MultipartFile,
+        file: FileUpload,
         path: String,
         allowedTypes: List<String>,
         maxSizeMB: Int
@@ -41,6 +41,16 @@ interface StorageService {
      */
     suspend fun getSignedUrl(path: String, expirationMinutes: Int = 60): Result<String>
 }
+
+/**
+ * Domain model for file upload (framework-agnostic)
+ */
+data class FileUpload(
+    val fileName: String,
+    val contentType: String,
+    val size: Long,
+    val inputStream: InputStream
+)
 
 /**
  * Result of a file upload operation

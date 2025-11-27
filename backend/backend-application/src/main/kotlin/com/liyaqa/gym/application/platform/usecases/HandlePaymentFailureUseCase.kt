@@ -29,6 +29,11 @@ class HandlePaymentFailureUseCase(
 
     private val logger = LoggerFactory.getLogger(HandlePaymentFailureUseCase::class.java)
 
+    companion object {
+        // System user ID for automated actions
+        private val SYSTEM_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+    }
+
     suspend fun execute(tenantId: UUID, reason: String): Result<Unit> {
         return try {
             logger.info("Handling payment failure for tenant: $tenantId, reason: $reason")
@@ -94,7 +99,8 @@ class HandlePaymentFailureUseCase(
                     suspendTenantUseCase.execute(
                         SuspendTenantCommand(
                             tenantId = tenantId,
-                            reason = "Payment failure after ${updatedSubscription.paymentFailureCount} attempts"
+                            reason = "Payment failure after ${updatedSubscription.paymentFailureCount} attempts",
+                            suspendedBy = SYSTEM_USER_ID
                         )
                     ).getOrThrow()
 

@@ -27,6 +27,7 @@ class InvoiceEntityMapper(
     fun toEntity(domain: Invoice): InvoiceJpaEntity {
         return InvoiceJpaEntity(
             id = domain.id,
+            tenantId = domain.tenantId,
             invoiceNumber = domain.invoiceNumber,
             organizationId = domain.organizationId,
             branchId = domain.branchId,
@@ -68,6 +69,7 @@ class InvoiceEntityMapper(
     fun toDomain(entity: InvoiceJpaEntity): Invoice {
         return Invoice(
             id = entity.id,
+            tenantId = entity.tenantId,
             invoiceNumber = entity.invoiceNumber,
             organizationId = entity.organizationId,
             branchId = entity.branchId,

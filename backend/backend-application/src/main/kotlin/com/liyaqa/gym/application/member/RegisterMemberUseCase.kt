@@ -69,6 +69,7 @@ class RegisterMemberUseCase(
 
             // 4. Create member entity
             val member = Member.create(
+                tenantId = command.organizationId, // tenantId is same as organizationId
                 organizationId = command.organizationId,
                 branchId = command.branchId,
                 name = command.name,

@@ -1,7 +1,7 @@
 package com.liyaqa.gym.application.branding.commands
 
 import com.liyaqa.gym.domain.entities.tenant.BrandColors
-import org.springframework.web.multipart.MultipartFile
+import com.liyaqa.gym.domain.services.FileUpload
 import java.util.UUID
 
 /**
@@ -9,7 +9,7 @@ import java.util.UUID
  */
 data class UpdateBrandingCommand(
     val tenantId: UUID,
-    val logoFile: MultipartFile?,
-    val faviconFile: MultipartFile?,
+    val logoFile: FileUpload?,
+    val faviconFile: FileUpload?,
     val brandColors: BrandColors?
 )

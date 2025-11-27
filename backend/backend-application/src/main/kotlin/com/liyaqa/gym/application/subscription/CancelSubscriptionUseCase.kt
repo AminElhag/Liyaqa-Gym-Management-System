@@ -286,6 +286,7 @@ class CancelSubscriptionUseCase(
 
             // Create a refund payment record
             val refundPayment = Payment.create(
+                tenantId = member.organizationId,
                 memberId = subscription.memberId,
                 organizationId = member.organizationId,
                 branchId = member.branchId,

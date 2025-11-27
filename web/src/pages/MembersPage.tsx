@@ -30,11 +30,13 @@ import {
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { fetchMembers, createMember, updateMember, deleteMember, Member } from '@/features/members/membersSlice';
+import { fetchBranches } from '@/features/branches/branchesSlice';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const memberSchema = z.object({
+  branchId: z.string().min(1, 'Branch is required'),
   name: z.string().min(2, 'Name must be at least 2 characters'),
   nameArabic: z.string().optional(),
   email: z.string().email('Invalid email address'),
@@ -54,6 +56,7 @@ export default function MembersPage() {
   const dispatch = useAppDispatch();
   const { members: membersData, isLoading, error, totalCount, currentPage, pageSize } = useAppSelector((state) => state.members);
   const { user } = useAppSelector((state) => state.auth);
+  const { branches } = useAppSelector((state) => state.branches);
 
   // Ensure members is always an array to prevent .map errors
   const members = Array.isArray(membersData) ? membersData : [];
@@ -73,18 +76,21 @@ export default function MembersPage() {
   } = useForm<MemberForm>({
     resolver: zodResolver(memberSchema),
     defaultValues: {
+      branchId: user?.branchId || '',
       gender: 'MALE',
     },
   });
 
   useEffect(() => {
     dispatch(fetchMembers({ page: page + 1, pageSize: rowsPerPage, search: searchQuery }));
+    dispatch(fetchBranches());
   }, [dispatch, page, rowsPerPage, searchQuery]);
 
   const handleOpenDialog = (member?: Member) => {
     if (member) {
       setEditingMember(member);
       reset({
+        branchId: member.branchId || user?.branchId || '',
         name: member.name || '',
         nameArabic: member.nameArabic || '',
         email: member.email,
@@ -100,6 +106,7 @@ export default function MembersPage() {
     } else {
       setEditingMember(null);
       reset({
+        branchId: user?.branchId || '',
         name: '',
         nameArabic: '',
         email: '',
@@ -127,20 +134,14 @@ export default function MembersPage() {
       if (editingMember) {
         await dispatch(updateMember({ id: editingMember.id, data })).unwrap();
       } else {
-        // Check if user has a branchId
-        if (!user?.branchId) {
-          console.error('User does not have a branchId');
-          alert('Cannot create member: User account is not associated with a branch');
+        // Validate branch selection
+        if (!data.branchId) {
+          alert('Please select a branch');
           return;
         }
 
-        // Add branchId from the logged-in user
-        const memberData = {
-          ...data,
-          branchId: user.branchId,
-        };
-        console.log('Creating member with data:', memberData);
-        await dispatch(createMember(memberData)).unwrap();
+        console.log('Creating member with data:', data);
+        await dispatch(createMember(data)).unwrap();
       }
       handleCloseDialog();
       dispatch(fetchMembers({ page: page + 1, pageSize: rowsPerPage, search: searchQuery }));
@@ -299,6 +300,25 @@ export default function MembersPage() {
           </DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              <TextField
+                {...register('branchId')}
+                label="Branch"
+                select
+                fullWidth
+                error={!!errors.branchId}
+                helperText={errors.branchId?.message}
+                defaultValue={user?.branchId || ''}
+              >
+                {branches.length === 0 ? (
+                  <MenuItem disabled>No branches available</MenuItem>
+                ) : (
+                  branches.map((branch) => (
+                    <MenuItem key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </MenuItem>
+                  ))
+                )}
+              </TextField>
               <TextField
                 {...register('name')}
                 label="Full Name"

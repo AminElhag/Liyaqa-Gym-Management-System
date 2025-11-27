@@ -131,6 +131,7 @@ class AuthService(
 
         // Create Member entity
         val member = Member.create(
+            tenantId = branch.organizationId,
             organizationId = branch.organizationId,
             branchId = branchId,
             name = request.name,
@@ -152,6 +153,7 @@ class AuthService(
 
         // Create User entity
         val user = User.createMemberUser(
+            tenantId = branch.organizationId,
             email = request.email,
             passwordHash = passwordEncoder.encode(request.password),
             organizationId = branch.organizationId,

@@ -23,6 +23,7 @@ class TrainerEntityMapper {
     fun toEntity(domain: Trainer): TrainerJpaEntity {
         return TrainerJpaEntity(
             id = domain.id,
+            tenantId = domain.tenantId,
             branchId = domain.branchId,
             name = domain.name,
             nameArabic = domain.nameArabic,
@@ -45,6 +46,7 @@ class TrainerEntityMapper {
     fun toDomain(entity: TrainerJpaEntity): Trainer {
         return Trainer(
             id = entity.id,
+            tenantId = entity.tenantId,
             branchId = entity.branchId,
             name = entity.name,
             nameArabic = entity.nameArabic,

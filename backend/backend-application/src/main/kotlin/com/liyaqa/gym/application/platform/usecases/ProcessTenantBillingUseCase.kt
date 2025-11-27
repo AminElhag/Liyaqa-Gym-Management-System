@@ -78,16 +78,19 @@ class ProcessTenantBillingUseCase(
 
             // Submit to ZATCA for clearance
             val clearanceResult = zatcaService.submitInvoice(invoice)
-            if (clearanceResult.isSuccess && clearanceResult.clearanceId != null && clearanceResult.qrCode != null) {
-                invoice = invoice.addZatcaClearance(clearanceResult.clearanceId, clearanceResult.qrCode)
+            val clearanceId = clearanceResult.clearanceId
+            val qrCode = clearanceResult.qrCode
+            if (clearanceResult.isSuccess && clearanceId != null && qrCode != null) {
+                invoice = invoice.addZatcaClearance(clearanceId, qrCode)
                 invoiceRepository.save(invoice).getOrThrow()
             }
 
             // Attempt payment if payment method on file
-            if (subscription.paymentMethod != null) {
+            val paymentMethod = subscription.paymentMethod
+            if (paymentMethod != null) {
                 val paymentResult = paymentGateway.processPayment(
                     amount = totalAmount,
-                    paymentMethod = subscription.paymentMethod,
+                    paymentMethod = paymentMethod,
                     metadata = mapOf(
                         "invoiceId" to invoice.id.toString(),
                         "tenantId" to tenantId.toString(),

@@ -41,14 +41,14 @@ class GetTenantBrandingUseCase(
             tenantNameArabic = tenant.nameArabic,
             logo = tenant.logo,
             favicon = tenant.favicon,
-            brandColors = tenant.brandColors ?: getDefaultBrandColors(),
+            brandColors = tenant.brandColors?.let { convertBrandColors(it) } ?: getDefaultBrandColors(),
             customDomain = tenant.customDomain,
             emailFromName = tenant.emailFromName ?: tenant.name,
             emailFromAddress = tenant.emailFromAddress ?: "noreply@${tenant.slug}.liyaqa.com",
             smsFromName = tenant.smsFromName ?: tenant.name,
             supportEmail = tenant.contactInfo.primaryContactEmail,
             supportPhone = tenant.contactInfo.primaryContactPhone,
-            socialLinks = tenant.socialLinks,
+            socialLinks = tenant.socialLinks?.let { convertSocialLinks(it) },
             mobileAppConfig = getMobileAppConfig(tenant)
         )
 
@@ -82,14 +82,14 @@ class GetTenantBrandingUseCase(
             tenantNameArabic = tenant.nameArabic,
             logo = tenant.logo,
             favicon = tenant.favicon,
-            brandColors = tenant.brandColors ?: getDefaultBrandColors(),
+            brandColors = tenant.brandColors?.let { convertBrandColors(it) } ?: getDefaultBrandColors(),
             customDomain = tenant.customDomain,
             emailFromName = tenant.emailFromName ?: tenant.name,
             emailFromAddress = tenant.emailFromAddress ?: "noreply@${tenant.slug}.liyaqa.com",
             smsFromName = tenant.smsFromName ?: tenant.name,
             supportEmail = tenant.contactInfo.primaryContactEmail,
             supportPhone = tenant.contactInfo.primaryContactPhone,
-            socialLinks = tenant.socialLinks,
+            socialLinks = tenant.socialLinks?.let { convertSocialLinks(it) },
             mobileAppConfig = getMobileAppConfig(tenant)
         )
 
@@ -97,6 +97,26 @@ class GetTenantBrandingUseCase(
         cacheService.set(cacheKey, branding, ttlSeconds = 3600)
 
         return branding
+    }
+
+    private fun convertBrandColors(tenantColors: com.liyaqa.gym.domain.entities.tenant.BrandColors): BrandColors {
+        return BrandColors(
+            primaryColor = tenantColors.primaryColor,
+            secondaryColor = tenantColors.secondaryColor,
+            accentColor = tenantColors.accentColor
+        )
+    }
+
+    private fun convertSocialLinks(tenantLinks: com.liyaqa.gym.domain.entities.tenant.SocialLinks): com.liyaqa.gym.domain.entities.branding.SocialLinks {
+        return com.liyaqa.gym.domain.entities.branding.SocialLinks(
+            facebook = tenantLinks.facebook,
+            instagram = tenantLinks.instagram,
+            twitter = tenantLinks.twitter,
+            linkedin = tenantLinks.linkedin,
+            tiktok = tenantLinks.tiktok,
+            youtube = tenantLinks.youtube,
+            website = tenantLinks.website
+        )
     }
 
     private fun getDefaultBrandColors(): BrandColors {

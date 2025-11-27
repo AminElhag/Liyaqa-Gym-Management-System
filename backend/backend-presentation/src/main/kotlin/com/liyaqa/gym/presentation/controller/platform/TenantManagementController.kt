@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -114,9 +115,9 @@ class TenantManagementController(
         logger.info("Listing tenants - status: $status, plan: $plan, search: $search")
 
         // TODO: Implement proper pagination with repository
-        // For now, return empty page
+        // For now, use large page size to get all tenants for filtering
         val tenants = runBlocking {
-            tenantRepository.findAll().getOrNull() ?: emptyList()
+            tenantRepository.findAll(PageRequest.of(0, 10000)).getOrNull()?.content ?: emptyList()
         }
 
         // Apply filters
@@ -184,13 +185,15 @@ class TenantManagementController(
     @Operation(summary = "Suspend tenant", description = "Suspend a tenant account")
     fun suspendTenant(
         @PathVariable id: UUID,
-        @RequestBody request: SuspendTenantRequest
+        @RequestBody request: SuspendTenantRequest,
+        @AuthenticationPrincipal adminId: String?
     ): ResponseEntity<Unit> {
         logger.info("Suspending tenant: $id - reason: ${request.reason}")
 
         val command = SuspendTenantCommand(
             tenantId = id,
-            reason = request.reason
+            reason = request.reason,
+            suspendedBy = UUID.fromString(adminId ?: throw IllegalStateException("Admin ID not found"))
         )
 
         runBlocking {
@@ -206,10 +209,17 @@ class TenantManagementController(
      */
     @PostMapping("/{id}/reactivate")
     @Operation(summary = "Reactivate tenant", description = "Reactivate a suspended tenant")
-    fun reactivateTenant(@PathVariable id: UUID): ResponseEntity<Unit> {
+    fun reactivateTenant(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal adminId: String?
+    ): ResponseEntity<Unit> {
         logger.info("Reactivating tenant: $id")
 
-        val command = ReactivateTenantCommand(tenantId = id)
+        val command = ReactivateTenantCommand(
+            tenantId = id,
+            reactivatedBy = UUID.fromString(adminId ?: throw IllegalStateException("Admin ID not found")),
+            notes = null
+        )
 
         runBlocking {
             reactivateTenantUseCase.execute(command)

@@ -5,6 +5,7 @@ import com.liyaqa.gym.application.branding.usecases.GetTenantBrandingUseCase
 import com.liyaqa.gym.application.branding.usecases.UpdateTenantBrandingUseCase
 import com.liyaqa.gym.domain.entities.tenant.BrandColors
 import com.liyaqa.gym.domain.entities.tenant.TenantUser
+import com.liyaqa.gym.domain.services.FileUpload
 import com.liyaqa.gym.presentation.dto.branding.BrandColorsDTO
 import com.liyaqa.gym.presentation.dto.branding.BrandingPreviewResponse
 import com.liyaqa.gym.presentation.dto.branding.PreviewBrandingRequest
@@ -21,6 +22,18 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+
+/**
+ * Extension function to convert Spring's MultipartFile to domain FileUpload
+ */
+private fun MultipartFile.toFileUpload(): FileUpload {
+    return FileUpload(
+        fileName = this.originalFilename ?: "unknown",
+        contentType = this.contentType ?: "application/octet-stream",
+        size = this.size,
+        inputStream = this.inputStream
+    )
+}
 
 /**
  * Tenant Branding Controller
@@ -78,8 +91,8 @@ class TenantBrandingController(
 
             val command = UpdateBrandingCommand(
                 tenantId = user.tenantId,
-                logoFile = logo,
-                faviconFile = favicon,
+                logoFile = logo?.toFileUpload(),
+                faviconFile = favicon?.toFileUpload(),
                 brandColors = brandColors
             )
 
