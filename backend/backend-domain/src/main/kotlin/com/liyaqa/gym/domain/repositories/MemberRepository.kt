@@ -106,4 +106,11 @@ interface MemberRepository {
      * @return Result indicating success
      */
     fun softDelete(memberId: UUID): Result<Unit>
+
+    /**
+     * Count all members across all tenants (platform-wide).
+     *
+     * @return Result containing total count of members
+     */
+    fun countAll(): Result<Long>
 }

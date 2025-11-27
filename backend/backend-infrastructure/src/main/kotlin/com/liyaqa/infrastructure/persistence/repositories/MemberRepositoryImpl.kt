@@ -144,6 +144,15 @@ class MemberRepositoryImpl(
         }
     }
 
+    override fun countAll(): Result<Long> {
+        return runCatching {
+            logger.debug("Counting all members across all tenants")
+            jpaRepository.count()
+        }.onFailure { error ->
+            logger.error("Failed to count all members", error)
+        }
+    }
+
     private fun createSearchSpecification(
         branchId: UUID?,
         name: String?,

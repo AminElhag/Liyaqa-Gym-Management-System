@@ -135,4 +135,19 @@ interface TenantSubscriptionRepository {
      * @return List of subscriptions with payment failures
      */
     fun findWithPaymentFailures(maxFailureCount: Int): Result<List<TenantSubscription>>
+
+    /**
+     * Find subscriptions with any payment failures.
+     *
+     * @return List of subscriptions with payment failures
+     */
+    fun findWithPaymentFailures(): Result<List<TenantSubscription>>
+
+    /**
+     * Find trial subscriptions expiring within the specified number of days.
+     *
+     * @param days Number of days to look ahead
+     * @return List of trial subscriptions expiring within the specified days
+     */
+    fun findTrialsExpiringInDays(days: Int): Result<List<TenantSubscription>>
 }
