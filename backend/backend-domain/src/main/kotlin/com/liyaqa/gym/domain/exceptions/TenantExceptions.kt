@@ -55,3 +55,9 @@ class InvalidTenantStatusException(tenantId: UUID, currentStatus: String, messag
  */
 class TenantContextNotSetException(message: String = "Tenant context not set") :
     RuntimeException(message)
+
+/**
+ * Exception thrown when no active pricing configuration is found.
+ */
+class NoPricingConfigException(message: String = "No active pricing configuration found") :
+    RuntimeException(message)
