@@ -61,4 +61,11 @@ interface BookingRepository {
      * @return Result indicating success or failure
      */
     fun delete(id: UUID): Result<Unit>
+
+    /**
+     * Count all bookings across all tenants (platform-wide).
+     *
+     * @return Result containing total count of bookings
+     */
+    fun countAll(): Result<Long>
 }

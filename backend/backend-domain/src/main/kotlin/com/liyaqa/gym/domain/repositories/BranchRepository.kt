@@ -63,4 +63,12 @@ interface BranchRepository {
      * @return Result containing true if exists, false otherwise
      */
     fun existsByOrganizationAndName(organizationId: UUID, name: String): Result<Boolean>
+
+    /**
+     * Count branches by organization (tenant).
+     *
+     * @param organizationId The organization identifier
+     * @return Result containing count of branches for the organization
+     */
+    fun countByOrganization(organizationId: UUID): Result<Long>
 }

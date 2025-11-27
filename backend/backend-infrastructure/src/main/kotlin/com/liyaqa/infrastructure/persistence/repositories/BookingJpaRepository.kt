@@ -121,4 +121,10 @@ class BookingJpaRepositoryImpl(
             }
         }
     }
+
+    override fun countAll(): Result<Long> {
+        return runCatching {
+            jpaRepository.count()
+        }
+    }
 }

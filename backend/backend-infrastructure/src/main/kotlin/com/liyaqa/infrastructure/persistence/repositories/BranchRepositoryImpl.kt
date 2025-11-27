@@ -89,4 +89,13 @@ class BranchRepositoryImpl(
             logger.error("Failed to check branch existence by organization and name", error)
         }
     }
+
+    override fun countByOrganization(organizationId: UUID): Result<Long> {
+        return runCatching {
+            logger.debug("Counting branches by organization: {}", organizationId)
+            jpaRepository.countByOrganizationId(organizationId)
+        }.onFailure { error ->
+            logger.error("Failed to count branches by organization: {}", organizationId, error)
+        }
+    }
 }

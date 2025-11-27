@@ -27,4 +27,7 @@ interface BranchJpaEntityRepository : JpaRepository<BranchJpaEntity, UUID> {
 
     @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM BranchJpaEntity b WHERE b.organizationId = :organizationId AND b.name = :name AND b.isDeleted = false")
     fun existsByOrganizationIdAndName(@Param("organizationId") organizationId: UUID, @Param("name") name: String): Boolean
+
+    @Query("SELECT COUNT(b) FROM BranchJpaEntity b WHERE b.organizationId = :organizationId AND b.isDeleted = false")
+    fun countByOrganizationId(@Param("organizationId") organizationId: UUID): Long
 }
